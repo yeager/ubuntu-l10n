@@ -144,3 +144,11 @@ msgstr ""
 #, python-brace-format
 msgid "Cached ({age} min ago)"
 msgstr ""
+
+#: desktop file
+msgid "Ubuntu/Launchpad translation statistics viewer"
+msgstr ""
+
+#: desktop file
+msgid "translation;localization;ubuntu;launchpad;l10n;"
+msgstr ""

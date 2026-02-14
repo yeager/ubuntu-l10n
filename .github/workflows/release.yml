@@ -39,6 +39,11 @@ jobs:
             msgfmt -o locale/$lang/LC_MESSAGES/ubuntu-l10n.mo "$po"
           done
 
+
+      - name: Generate translated .desktop file
+        run: |
+          python3 desktop-merge.py se.danielnylander.ubuntu-l10n.desktop.in po/ se.danielnylander.ubuntu-l10n.desktop
+
       - name: Build .deb
         run: |
           VERSION=${GITHUB_REF_NAME#v}

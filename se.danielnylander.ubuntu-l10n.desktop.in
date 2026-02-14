@@ -1,0 +1,9 @@
+[Desktop Entry]
+_Name=Ubuntu L10n
+_Comment=Ubuntu/Launchpad translation statistics viewer
+Exec=ubuntu-l10n
+Icon=ubuntu-l10n
+Terminal=false
+Type=Application
+Categories=Development;Translation;
+_Keywords=translation;localization;ubuntu;launchpad;l10n;
