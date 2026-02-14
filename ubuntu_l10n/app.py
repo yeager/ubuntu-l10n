@@ -480,7 +480,7 @@ class MainWindow(Adw.ApplicationWindow):
         about = Adw.AboutWindow(
             transient_for=self,
             application_name=_("Ubuntu L10n"),
-            application_icon="applications-internet",
+            application_icon="ubuntu-l10n",
             version=VERSION,
             developer_name="Daniel Nylander",
             developers=["Daniel Nylander <daniel@danielnylander.se>"],
@@ -488,6 +488,8 @@ class MainWindow(Adw.ApplicationWindow):
             license_type=Gtk.License.GPL_3_0,
             website="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
+            comments=_("A localization tool by Daniel Nylander"),
+            translator_credits=_("Translate this app: https://app.transifex.com/linguaedit/ubuntu-l10n/"),
         )
         about.present()
 

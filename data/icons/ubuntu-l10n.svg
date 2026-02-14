@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs><style>.c{fill:#E95420;}.d{fill:#fff;}</style></defs>
+  <rect class="c" width="128" height="128" rx="16"/>
+  <circle cx="64" cy="58" r="28" fill="none" stroke="#fff" stroke-width="5"/>
+  <circle class="d" cx="64" cy="30" r="6"/>
+  <circle class="d" cx="40" cy="72" r="6"/>
+  <circle class="d" cx="88" cy="72" r="6"/>
+  <text x="64" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#fff">L10n</text>
+</svg>
