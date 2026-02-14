@@ -1,0 +1,146 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Daniel Nylander
+# This file is distributed under the same license as the ubuntu-l10n package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ubuntu-l10n 0.1.0\n"
+"Report-Msgid-Bugs-To: daniel@danielnylander.se\n"
+"POT-Creation-Date: 2026-02-14 09:44+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ubuntu_l10n/app.py:100
+#, python-brace-format
+msgid "{translated}/{total} translated"
+msgstr ""
+
+#: ubuntu_l10n/app.py:104
+#, python-brace-format
+msgid "{count} untranslated"
+msgstr ""
+
+#: ubuntu_l10n/app.py:107
+#, python-brace-format
+msgid "{count} need review"
+msgstr ""
+
+#: ubuntu_l10n/app.py:110
+#, python-brace-format
+msgid "{count} changed"
+msgstr ""
+
+#: ubuntu_l10n/app.py:122
+#, python-brace-format
+msgid "{date} by {editor}"
+msgstr ""
+
+#: ubuntu_l10n/app.py:135
+msgid "Ubuntu Translation Statistics"
+msgstr ""
+
+#: ubuntu_l10n/app.py:157 ubuntu_l10n/app.py:425
+msgid "Ubuntu L10n"
+msgstr ""
+
+#: ubuntu_l10n/app.py:158
+msgid "Translation Statistics"
+msgstr ""
+
+#: ubuntu_l10n/app.py:164
+msgid "Refresh data"
+msgstr ""
+
+#: ubuntu_l10n/app.py:170
+msgid "Toggle sort order"
+msgstr ""
+
+#: ubuntu_l10n/app.py:177 ubuntu_l10n/app.py:395
+msgid "Settings"
+msgstr ""
+
+#: ubuntu_l10n/app.py:178
+msgid "About"
+msgstr ""
+
+#: ubuntu_l10n/app.py:180
+msgid "Menu"
+msgstr ""
+
+#: ubuntu_l10n/app.py:217
+msgid "Release:"
+msgstr ""
+
+#: ubuntu_l10n/app.py:238
+msgid "Language:"
+msgstr ""
+
+#: ubuntu_l10n/app.py:245
+msgid "Search packages…"
+msgstr ""
+
+#: ubuntu_l10n/app.py:278 ubuntu_l10n/app.py:439
+msgid "Loading translations…"
+msgstr ""
+
+#: ubuntu_l10n/app.py:316
+msgid "Welcome to Ubuntu L10n!"
+msgstr ""
+
+#: ubuntu_l10n/app.py:318
+msgid ""
+"This app shows translation progress for Ubuntu packages on Launchpad.\n"
+"\n"
+"• Pick a release and language from the top bar\n"
+"• Click any package to open it on Launchpad\n"
+"• Use the refresh button to get the latest data\n"
+"\n"
+"Data is cached locally for 1 hour to reduce load on Launchpad servers."
+msgstr ""
+
+#: ubuntu_l10n/app.py:327
+msgid "Get Started"
+msgstr ""
+
+#: ubuntu_l10n/app.py:397
+msgid ""
+"Ubuntu L10n uses Launchpad's public translation pages.\n"
+"No API key is required."
+msgstr ""
+
+#: ubuntu_l10n/app.py:405
+msgid "Clear Cache"
+msgstr ""
+
+#: ubuntu_l10n/app.py:410
+msgid "Close"
+msgstr ""
+
+#: ubuntu_l10n/app.py:450
+#, python-brace-format
+msgid "Loading… {loaded}/{total} templates"
+msgstr ""
+
+#: ubuntu_l10n/app.py:481
+#, python-brace-format
+msgid "Error: {error}"
+msgstr ""
+
+#: ubuntu_l10n/app.py:505
+#, python-brace-format
+msgid ""
+"{count} templates · {translated}/{total} strings ({pct}%) · {untranslated} "
+"untranslated · {fully} fully translated"
+msgstr ""
+
+#: ubuntu_l10n/app.py:518
+#, python-brace-format
+msgid "Cached ({age} min ago)"
+msgstr ""

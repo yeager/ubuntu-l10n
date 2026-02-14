@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ubuntu-l10n"
+version = "0.1.0"
+description = "Ubuntu/Launchpad translation statistics viewer"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "Daniel Nylander", email = "daniel@danielnylander.se" },
+]
+dependencies = [
+    "PyGObject>=3.42",
+    "beautifulsoup4>=4.12",
+    "requests>=2.28",
+    "lxml>=4.9",
+]
+
+[project.scripts]
+ubuntu-l10n = "ubuntu_l10n.app:main"
+
+[project.urls]
+Homepage = "https://github.com/yeager/ubuntu-l10n"
+Repository = "https://github.com/yeager/ubuntu-l10n"
+
+[tool.setuptools.packages.find]
+include = ["ubuntu_l10n*"]
