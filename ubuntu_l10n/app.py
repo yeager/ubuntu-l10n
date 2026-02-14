@@ -489,7 +489,7 @@ class MainWindow(Adw.ApplicationWindow):
             website="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
             comments=_("A localization tool by Daniel Nylander"),
-            translator_credits=_("Translate this app: https://app.transifex.com/linguaedit/ubuntu-l10n/"),
+            translator_credits=_("Translate this app: https://app.transifex.com/danielnylander/ubuntu-l10n/"),
         )
         about.present()
 
