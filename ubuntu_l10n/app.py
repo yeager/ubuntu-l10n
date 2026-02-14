@@ -137,7 +137,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.packages: list[PackageStats] = []
         self.filtered_packages: list[PackageStats] = []
-        self.sort_ascending = True
         self._from_cache = False
         self._cache_age = 0
 
@@ -164,13 +163,6 @@ class MainWindow(Adw.ApplicationWindow):
         refresh_btn.set_tooltip_text(_("Refresh data"))
         refresh_btn.connect("clicked", self._on_refresh)
         header.pack_start(refresh_btn)
-
-        # Sort button
-        sort_btn = Gtk.Button(icon_name="view-sort-descending-symbolic")
-        sort_btn.set_tooltip_text(_("Toggle sort order"))
-        sort_btn.connect("clicked", self._on_toggle_sort)
-        header.pack_end(sort_btn)
-        self._sort_btn = sort_btn
 
         # Menu button
         menu = Gio.Menu()
@@ -239,6 +231,33 @@ class MainWindow(Adw.ApplicationWindow):
         lang_label.add_css_class("dim-label")
         controls.append(lang_label)
         controls.append(lang_drop)
+
+        # Sort dropdown
+        sort_model = Gtk.StringList()
+        self._sort_options = [
+            ("name_asc", _("Name (A-Ö)")),
+            ("most_translated", _("Most translated")),
+            ("least_translated", _("Least translated")),
+            ("most_strings", _("Most strings")),
+            ("last_updated", _("Last updated")),
+        ]
+        for _key, label in self._sort_options:
+            sort_model.append(label)
+        sort_drop = Gtk.DropDown(model=sort_model)
+        sort_drop.set_selected(0)
+        sort_drop.connect("notify::selected", self._on_sort_changed)
+        self._sort_drop = sort_drop
+
+        sort_label = Gtk.Label(label=_("Sort:"))
+        sort_label.add_css_class("dim-label")
+        controls.append(sort_label)
+        controls.append(sort_drop)
+
+        # Statistics button
+        stats_btn = Gtk.Button(icon_name="dialog-information-symbolic")
+        stats_btn.set_tooltip_text(_("Language statistics"))
+        stats_btn.connect("clicked", self._on_show_stats)
+        controls.append(stats_btn)
 
         # Search
         search = Gtk.SearchEntry()
@@ -376,12 +395,50 @@ class MainWindow(Adw.ApplicationWindow):
     def _on_search_changed(self, entry):
         self._filter_and_display()
 
-    def _on_toggle_sort(self, _btn):
-        self.sort_ascending = not self.sort_ascending
-        icon = ("view-sort-ascending-symbolic" if self.sort_ascending
-                else "view-sort-descending-symbolic")
-        self._sort_btn.set_icon_name(icon)
+    def _on_sort_changed(self, _drop, _pspec):
         self._filter_and_display()
+
+    def _on_show_stats(self, _btn):
+        """Show language-level statistics dialog."""
+        if not self.packages:
+            return
+
+        pkgs = self.packages
+        total_strings = sum(p.total for p in pkgs)
+        total_translated = sum(p.translated for p in pkgs)
+        overall_pct = (total_translated / total_strings * 100) if total_strings > 0 else 0
+        fully_translated = sum(1 for p in pkgs if p.translated_pct >= 100)
+        zero_pct = sum(1 for p in pkgs if p.translated_pct == 0)
+
+        top_translated = sorted(pkgs, key=lambda p: p.translated_pct, reverse=True)[:10]
+        least_translated = sorted(
+            [p for p in pkgs if p.total > 0],
+            key=lambda p: p.translated_pct)[:10]
+
+        lines = []
+        lines.append(_("<b>Overall:</b> {pct}% ({translated}/{total} strings)").format(
+            pct=f"{overall_pct:.1f}",
+            translated=f"{total_translated:,}",
+            total=f"{total_strings:,}"))
+        lines.append(_("<b>Packages:</b> {count} total, {fully} at 100%, {zero} at 0%").format(
+            count=len(pkgs), fully=fully_translated, zero=zero_pct))
+        lines.append("")
+        lines.append(_("<b>Top 10 most translated:</b>"))
+        for p in top_translated:
+            lines.append(f"  {p.name}: {p.translated_pct:.1f}%")
+        lines.append("")
+        lines.append(_("<b>Top 10 least translated:</b>"))
+        for p in least_translated:
+            lines.append(f"  {p.name}: {p.translated_pct:.1f}%")
+
+        dialog = Adw.MessageDialog(
+            transient_for=self,
+            heading=_("Language Statistics"),
+            body="\n".join(lines),
+        )
+        dialog.set_body_use_markup(True)
+        dialog.add_response("close", _("Close"))
+        dialog.present()
 
     def _on_row_activated(self, _list_box, row):
         child = row.get_child()
@@ -487,9 +544,18 @@ class MainWindow(Adw.ApplicationWindow):
         if query:
             filtered = [p for p in filtered if query in p.name.lower()]
 
-        # Sort by translated percentage
-        filtered.sort(key=lambda p: p.translated_pct,
-                       reverse=not self.sort_ascending)
+        # Sort based on dropdown selection
+        sort_key = self._sort_options[self._sort_drop.get_selected()][0]
+        if sort_key == "name_asc":
+            filtered.sort(key=lambda p: p.name.lower())
+        elif sort_key == "most_translated":
+            filtered.sort(key=lambda p: p.translated_pct, reverse=True)
+        elif sort_key == "least_translated":
+            filtered.sort(key=lambda p: p.translated_pct)
+        elif sort_key == "most_strings":
+            filtered.sort(key=lambda p: p.total, reverse=True)
+        elif sort_key == "last_updated":
+            filtered.sort(key=lambda p: p.last_edited or "", reverse=True)
         self.filtered_packages = filtered
 
         # Update summary
