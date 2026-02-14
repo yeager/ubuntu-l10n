@@ -1,0 +1,8 @@
+[main]
+host = https://app.transifex.com
+
+[o:linguaedit:p:ubuntu-l10n:r:ubuntu-l10n-pot]
+file_filter  = po/<lang>.po
+source_file  = po/ubuntu-l10n.pot
+source_lang  = en
+type         = PO
