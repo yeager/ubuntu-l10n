@@ -48,7 +48,7 @@ jobs:
           mkdir -p $PKG/usr/share/applications
           mkdir -p $PKG/DEBIAN
 
-          cp src/ubuntu_l10n/*.py $PKG/usr/lib/python3/dist-packages/ubuntu_l10n/
+          cp ubuntu_l10n/*.py $PKG/usr/lib/python3/dist-packages/ubuntu_l10n/
 
           for mo in locale/*/LC_MESSAGES/ubuntu-l10n.mo; do
             [ -f "$mo" ] || continue
