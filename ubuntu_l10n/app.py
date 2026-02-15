@@ -534,6 +534,7 @@ class MainWindow(Adw.ApplicationWindow):
             license_type=Gtk.License.GPL_3_0,
             website="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
+            translate_url="https://app.transifex.com/danielnylander/ubuntu-l10n/",
             comments=_("View Ubuntu translation statistics from Launchpad"),
             translator_credits="Daniel Nylander <daniel@danielnylander.se>",
         )
