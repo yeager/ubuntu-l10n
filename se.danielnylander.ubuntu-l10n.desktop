@@ -1,8 +1,7 @@
 [Desktop Entry]
 Name=Ubuntu L10n
-Name[sv]=Ubuntu översättningsstatus
+Name[sv]=Ubuntu L10n
 Comment=Ubuntu/Launchpad translation statistics viewer
-Comment[sv]=Visa översättningsstatistik för Ubuntu
 Exec=ubuntu-l10n
 Icon=ubuntu-l10n
 Terminal=false
