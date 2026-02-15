@@ -248,6 +248,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Menu button
         menu = Gio.Menu()
         menu.append(_("Settings"), "win.settings")
+        menu.append(_("Notifications"), "win.toggle-notifications")
         menu.append(_("About"), "win.about")
         menu_btn = Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu)
         menu_btn.set_tooltip_text(_("Menu"))
@@ -267,6 +268,10 @@ class MainWindow(Adw.ApplicationWindow):
         about_action = Gio.SimpleAction(name="about")
         about_action.connect("activate", self._on_about)
         self.add_action(about_action)
+
+        notif_action = Gio.SimpleAction(name="toggle-notifications")
+        notif_action.connect("activate", lambda *_: _save_notify_config({"enabled": not _load_notify_config().get("enabled", False)}))
+        self.add_action(notif_action)
 
         # Content box
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -615,6 +620,8 @@ from datetime import datetime as _dt_now
             comments=_("View Ubuntu translation statistics from Launchpad"),
             translator_credits="Daniel Nylander <daniel@danielnylander.se>",
         )
+        about.set_debug_info(_get_system_info())
+        about.set_debug_info_filename("ubuntu-l10n-debug.txt")
         about.present()
 
     def _load_data(self, force=False):
@@ -663,6 +670,14 @@ from datetime import datetime as _dt_now
         self.packages = packages
         self._from_cache = from_cache
         self._cache_age = age_minutes
+        # Notify about low translations
+        low = [p.name for p in packages if 0 < p.translated_pct < 50]
+        if low:
+            _send_notification(
+                _("Ubuntu L10n: Low translations"),
+                _("{count} packages below 50%: {names}").format(
+                    count=len(low), names=", ".join(low[:5])),
+                "ubuntu-l10n")
         self._filter_and_display()
         if self._heatmap_mode:
             self._stack.set_visible_child_name("heatmap")
@@ -777,6 +792,8 @@ class TranslationApp(Adw.Application):
             application_id=APP_ID,
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
+        if HAS_NOTIFY:
+            _Notify.init("ubuntu-l10n")
 
     def do_startup(self):
         Adw.Application.do_startup(self)
