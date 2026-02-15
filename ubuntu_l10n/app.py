@@ -26,7 +26,29 @@ gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
+
+
+def _setup_heatmap_css():
+    css = b"""
+    .heatmap-green { background-color: #26a269; color: white; border-radius: 8px; }
+    .heatmap-yellow { background-color: #e5a50a; color: white; border-radius: 8px; }
+    .heatmap-orange { background-color: #ff7800; color: white; border-radius: 8px; }
+    .heatmap-red { background-color: #c01c28; color: white; border-radius: 8px; }
+    .heatmap-gray { background-color: #77767b; color: white; border-radius: 8px; }
+    """
+    provider = Gtk.CssProvider()
+    provider.load_from_data(css)
+    Gtk.StyleContext.add_provider_for_display(
+        Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+
+def _heatmap_css_class(pct):
+    if pct >= 100: return "heatmap-green"
+    elif pct >= 75: return "heatmap-yellow"
+    elif pct >= 50: return "heatmap-orange"
+    elif pct > 0: return "heatmap-red"
+    return "heatmap-gray"
 APP_ID = "se.danielnylander.ubuntu-l10n"
 FIRST_RUN_KEY = "first_run_done"
 
@@ -139,6 +161,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.filtered_packages: list[PackageStats] = []
         self._from_cache = False
         self._cache_age = 0
+        self._heatmap_mode = False
 
         # Detect system language
         sys_lang = get_system_language()
