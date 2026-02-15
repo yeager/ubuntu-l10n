@@ -253,6 +253,12 @@ class MainWindow(Adw.ApplicationWindow):
         menu_btn.set_tooltip_text(_("Menu"))
         header.pack_end(menu_btn)
 
+        # Theme toggle
+        self._theme_btn = Gtk.Button(icon_name="weather-clear-night-symbolic",
+                                     tooltip_text=_("Toggle dark/light theme"))
+        self._theme_btn.connect("clicked", self._on_theme_toggle)
+        header.pack_end(self._theme_btn)
+
         # Actions
         settings_action = Gio.SimpleAction(name="settings")
         settings_action.connect("activate", self._on_settings)
@@ -413,6 +419,12 @@ class MainWindow(Adw.ApplicationWindow):
         self._stack.add_named(self._spinner_box, "loading")
         self._stack.add_named(scrolled, "content")
         self._stack.add_named(heatmap_scroll, "heatmap")
+        # Status bar
+        self._last_update_label = Gtk.Label(label="", halign=Gtk.Align.START,
+                                            margin_start=12, margin_end=12, margin_bottom=4)
+        self._last_update_label.add_css_class("dim-label")
+        self._last_update_label.add_css_class("caption")
+        content.append(self._last_update_label)
         content.append(self._stack)
 
         # Apply CSS
@@ -480,6 +492,18 @@ class MainWindow(Adw.ApplicationWindow):
     @property
     def _current_lang(self) -> str:
         return self._lang_items[self._lang_drop.get_selected()]
+
+    def _on_theme_toggle(self, _btn):
+        sm = Adw.StyleManager.get_default()
+        if sm.get_color_scheme() == Adw.ColorScheme.FORCE_DARK:
+            sm.set_color_scheme(Adw.ColorScheme.FORCE_LIGHT)
+            self._theme_btn.set_icon_name("weather-clear-night-symbolic")
+        else:
+            sm.set_color_scheme(Adw.ColorScheme.FORCE_DARK)
+            self._theme_btn.set_icon_name("weather-clear-symbolic")
+
+    def _update_last_updated(self):
+        self._last_update_label.set_text("Last updated: " + _dt_now.now().strftime("%Y-%m-%d %H:%M"))
 
     def _on_refresh(self, _btn):
         self._load_data(force=True)
@@ -568,6 +592,7 @@ class MainWindow(Adw.ApplicationWindow):
     def _on_clear_cache(self, _btn):
         """Clear the local cache."""
         from .scraper import CACHE_FILE
+from datetime import datetime as _dt_now
         try:
             CACHE_FILE.unlink(missing_ok=True)
         except Exception:
@@ -634,6 +659,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_data_loaded(self, packages: list[PackageStats],
                         from_cache: bool = False, age_minutes: int = 0):
+        self._update_last_updated()
         self.packages = packages
         self._from_cache = from_cache
         self._cache_age = age_minutes
@@ -751,6 +777,31 @@ class TranslationApp(Adw.Application):
             application_id=APP_ID,
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
+
+    def do_startup(self):
+        Adw.Application.do_startup(self)
+        self.set_accels_for_action("app.quit", ["<Control>q"])
+        self.set_accels_for_action("app.refresh", ["F5"])
+        self.set_accels_for_action("app.shortcuts", ["<Control>slash"])
+        for n, cb in [("quit", lambda *_: self.quit()),
+                      ("refresh", lambda *_: self._do_refresh()),
+                      ("shortcuts", self._show_shortcuts_window)]:
+            a = Gio.SimpleAction.new(n, None); a.connect("activate", cb); self.add_action(a)
+
+    def _do_refresh(self):
+        w = self.get_active_window()
+        if w: w._on_refresh(None)
+
+    def _show_shortcuts_window(self, *_args):
+        win = Gtk.ShortcutsWindow(transient_for=self.get_active_window(), modal=True)
+        section = Gtk.ShortcutsSection(visible=True, max_height=10)
+        group = Gtk.ShortcutsGroup(visible=True, title="General")
+        for accel, title in [("<Control>q", "Quit"), ("F5", "Refresh"), ("<Control>slash", "Keyboard shortcuts")]:
+            s = Gtk.ShortcutsShortcut(visible=True, accelerator=accel, title=title)
+            group.append(s)
+        section.append(group)
+        win.add_child(section)
+        win.present()
 
     def do_activate(self):
         win = self.get_active_window()
