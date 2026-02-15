@@ -1,32 +1,24 @@
-# #-#-#-#-#  ubuntu-l10n.pot (ubuntu-l10n)  #-#-#-#-#
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Daniel Nylander
 # This file is distributed under the same license as the ubuntu-l10n package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-# #-#-#-#-#  desktop.pot (PACKAGE VERSION)  #-#-#-#-#
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Daniel Nylander <po@danielnylander.se>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: ubuntu-l10n\n"
 "Report-Msgid-Bugs-To: daniel@danielnylander.se\n"
 "POT-Creation-Date: 2026-02-15 10:55+0100\n"
 "PO-Revision-Date: 2026-02-14 08:45+0000\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>, 2026\n"
-"Language-Team: Swedish (https://app.transifex.com/danielnylander/teams/"
-"304749/sv/)\n"
-"Language: sv\n"
+"Language-Team: Swedish (https://app.transifex.com/danielnylander/teams/304749/sv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ubuntu_l10n/app.py:122
@@ -72,7 +64,7 @@ msgstr "Uppdatera data"
 
 #: ubuntu_l10n/app.py:192
 msgid "Toggle heatmap view"
-msgstr ""
+msgstr "Växla värmekarta"
 
 #: ubuntu_l10n/app.py:198 ubuntu_l10n/app.py:498
 msgid "Settings"
@@ -95,7 +87,6 @@ msgid "Language:"
 msgstr "Språk:"
 
 #: ubuntu_l10n/app.py:267
-#, fuzzy
 msgid "Name (A-Z)"
 msgstr "Namn (A-Ö)"
 
@@ -151,8 +142,7 @@ msgstr ""
 "• Klicka på ett paket för att öppna det på Launchpad\n"
 "• Använd uppdateringsknappen för att hämta de senaste uppgifterna\n"
 "\n"
-"Uppgifterna cachelagras lokalt i en timme för att minska belastningen på "
-"Launchpad-servrarna."
+"Uppgifterna cachelagras lokalt i en timme för att minska belastningen på Launchpad-servrarna."
 
 #: ubuntu_l10n/app.py:392
 msgid "Get Started"
