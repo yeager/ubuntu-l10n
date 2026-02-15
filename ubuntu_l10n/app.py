@@ -597,7 +597,6 @@ class MainWindow(Adw.ApplicationWindow):
     def _on_clear_cache(self, _btn):
         """Clear the local cache."""
         from .scraper import CACHE_FILE
-from datetime import datetime as _dt_now
         try:
             CACHE_FILE.unlink(missing_ok=True)
         except Exception:
