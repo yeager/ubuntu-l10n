@@ -187,6 +187,12 @@ class MainWindow(Adw.ApplicationWindow):
         refresh_btn.connect("clicked", self._on_refresh)
         header.pack_start(refresh_btn)
 
+        # Heatmap toggle
+        self._heatmap_btn = Gtk.ToggleButton(icon_name="view-grid-symbolic")
+        self._heatmap_btn.set_tooltip_text(_("Toggle heatmap view"))
+        self._heatmap_btn.connect("toggled", self._on_heatmap_toggled)
+        header.pack_start(self._heatmap_btn)
+
         # Menu button
         menu = Gio.Menu()
         menu.append(_("Settings"), "win.settings")
@@ -335,14 +341,31 @@ class MainWindow(Adw.ApplicationWindow):
         self._list_box.connect("row-activated", self._on_row_activated)
         scrolled.set_child(self._list_box)
 
+        # Heatmap view
+        heatmap_scroll = Gtk.ScrolledWindow(vexpand=True)
+        self._heatmap_flow = Gtk.FlowBox()
+        self._heatmap_flow.set_selection_mode(Gtk.SelectionMode.NONE)
+        self._heatmap_flow.set_homogeneous(True)
+        self._heatmap_flow.set_min_children_per_line(3)
+        self._heatmap_flow.set_max_children_per_line(8)
+        self._heatmap_flow.set_column_spacing(4)
+        self._heatmap_flow.set_row_spacing(4)
+        self._heatmap_flow.set_margin_start(12)
+        self._heatmap_flow.set_margin_end(12)
+        self._heatmap_flow.set_margin_top(8)
+        self._heatmap_flow.set_margin_bottom(12)
+        heatmap_scroll.set_child(self._heatmap_flow)
+
         # Stack for loading/content
         self._stack = Gtk.Stack()
         self._stack.add_named(self._spinner_box, "loading")
         self._stack.add_named(scrolled, "content")
+        self._stack.add_named(heatmap_scroll, "heatmap")
         content.append(self._stack)
 
         # Apply CSS
         self._apply_css()
+        _setup_heatmap_css()
 
         # Show welcome dialog on first run, then load data
         config = load_config()
@@ -551,13 +574,21 @@ class MainWindow(Adw.ApplicationWindow):
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
 
+    def _on_heatmap_toggled(self, btn):
+        self._heatmap_mode = btn.get_active()
+        if self.packages:
+            self._filter_and_display()
+
     def _on_data_loaded(self, packages: list[PackageStats],
                         from_cache: bool = False, age_minutes: int = 0):
         self.packages = packages
         self._from_cache = from_cache
         self._cache_age = age_minutes
         self._filter_and_display()
-        self._stack.set_visible_child_name("content")
+        if self._heatmap_mode:
+            self._stack.set_visible_child_name("heatmap")
+        else:
+            self._stack.set_visible_child_name("content")
 
     def _on_data_error(self, error: str):
         self._loading_label.set_text(_("Error: {error}").format(error=error))
@@ -623,6 +654,42 @@ class MainWindow(Adw.ApplicationWindow):
         for pkg in filtered:
             row = PackageRow(pkg)
             self._list_box.append(row)
+
+        # Rebuild heatmap
+        while True:
+            child = self._heatmap_flow.get_first_child()
+            if child is None:
+                break
+            self._heatmap_flow.remove(child)
+        for pkg in filtered:
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            box.set_size_request(140, 64)
+            box.add_css_class(_heatmap_css_class(pkg.translated_pct))
+            box.set_margin_start(4)
+            box.set_margin_end(4)
+            box.set_margin_top(4)
+            box.set_margin_bottom(4)
+            lbl = Gtk.Label(label=pkg.name)
+            lbl.set_ellipsize(Pango.EllipsizeMode.END)
+            lbl.set_max_width_chars(18)
+            lbl.set_margin_top(6)
+            lbl.set_margin_start(6)
+            lbl.set_margin_end(6)
+            box.append(lbl)
+            pct_lbl = Gtk.Label(label=f"{pkg.translated_pct:.0f}%")
+            pct_lbl.set_margin_bottom(6)
+            box.append(pct_lbl)
+            box.set_tooltip_text(f"{pkg.name}: {pkg.translated}/{pkg.total}")
+            gesture = Gtk.GestureClick()
+            gesture.connect("released", lambda g, n, x, y, url=pkg.translate_url: webbrowser.open(url))
+            box.add_controller(gesture)
+            box.set_cursor(Gdk.Cursor.new_from_name("pointer"))
+            self._heatmap_flow.append(box)
+
+        if self._heatmap_mode:
+            self._stack.set_visible_child_name("heatmap")
+        else:
+            self._stack.set_visible_child_name("content")
 
 
 class TranslationApp(Adw.Application):
