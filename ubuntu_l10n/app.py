@@ -264,7 +264,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Sort dropdown
         sort_model = Gtk.StringList()
         self._sort_options = [
-            ("name_asc", _("Name (A-Ö)")),
+            ("name_asc", _("Name (A-Z)")),
             ("most_translated", _("Most translated")),
             ("least_translated", _("Least translated")),
             ("most_strings", _("Most strings")),

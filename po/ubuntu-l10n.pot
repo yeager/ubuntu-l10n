@@ -1,33 +1,14 @@
-# #-#-#-#-#  ubuntu-l10n.pot (ubuntu-l10n)  #-#-#-#-#
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Daniel Nylander
 # This file is distributed under the same license as the ubuntu-l10n package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-# #-#-#-#-#  desktop.pot (PACKAGE VERSION)  #-#-#-#-#
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  ubuntu-l10n.pot (ubuntu-l10n)  #-#-#-#-#\n"
 "Project-Id-Version: ubuntu-l10n\n"
 "Report-Msgid-Bugs-To: daniel@danielnylander.se\n"
-"POT-Creation-Date: 2026-02-15 10:08+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"#-#-#-#-#  desktop.pot (PACKAGE VERSION)  #-#-#-#-#\n"
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-15 10:12+0100\n"
+"POT-Creation-Date: 2026-02-15 10:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,108 +17,112 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ubuntu_l10n/app.py:100
+#: ubuntu_l10n/app.py:122
 #, python-brace-format
 msgid "{translated}/{total} translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:104
+#: ubuntu_l10n/app.py:126
 #, python-brace-format
 msgid "{count} untranslated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:107
+#: ubuntu_l10n/app.py:129
 #, python-brace-format
 msgid "{count} need review"
 msgstr ""
 
-#: ubuntu_l10n/app.py:110
+#: ubuntu_l10n/app.py:132
 #, python-brace-format
 msgid "{count} changed"
 msgstr ""
 
-#: ubuntu_l10n/app.py:122
+#: ubuntu_l10n/app.py:144
 #, python-brace-format
 msgid "{date} by {editor}"
 msgstr ""
 
-#: ubuntu_l10n/app.py:135
+#: ubuntu_l10n/app.py:157
 msgid "Ubuntu Translation Statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:156 ubuntu_l10n/app.py:482
+#: ubuntu_l10n/app.py:179 ubuntu_l10n/app.py:528
 msgid "Ubuntu L10n"
 msgstr ""
 
-#: ubuntu_l10n/app.py:157
+#: ubuntu_l10n/app.py:180
 msgid "Translation Statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:163
+#: ubuntu_l10n/app.py:186
 msgid "Refresh data"
 msgstr ""
 
-#: ubuntu_l10n/app.py:169 ubuntu_l10n/app.py:452
+#: ubuntu_l10n/app.py:192
+msgid "Toggle heatmap view"
+msgstr ""
+
+#: ubuntu_l10n/app.py:198 ubuntu_l10n/app.py:498
 msgid "Settings"
 msgstr ""
 
-#: ubuntu_l10n/app.py:170
+#: ubuntu_l10n/app.py:199
 msgid "About"
 msgstr ""
 
-#: ubuntu_l10n/app.py:172
+#: ubuntu_l10n/app.py:201
 msgid "Menu"
 msgstr ""
 
-#: ubuntu_l10n/app.py:209
+#: ubuntu_l10n/app.py:238
 msgid "Release:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:230
+#: ubuntu_l10n/app.py:259
 msgid "Language:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:238
-msgid "Name (A-Ö)"
+#: ubuntu_l10n/app.py:267
+msgid "Name (A-Z)"
 msgstr ""
 
-#: ubuntu_l10n/app.py:239
+#: ubuntu_l10n/app.py:268
 msgid "Most translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:240
+#: ubuntu_l10n/app.py:269
 msgid "Least translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:241
+#: ubuntu_l10n/app.py:270
 msgid "Most strings"
 msgstr ""
 
-#: ubuntu_l10n/app.py:242
+#: ubuntu_l10n/app.py:271
 msgid "Last updated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:251
+#: ubuntu_l10n/app.py:280
 msgid "Sort:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:258
+#: ubuntu_l10n/app.py:287
 msgid "Language statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:264
+#: ubuntu_l10n/app.py:293
 msgid "Search packages…"
 msgstr ""
 
-#: ubuntu_l10n/app.py:297 ubuntu_l10n/app.py:498
+#: ubuntu_l10n/app.py:326 ubuntu_l10n/app.py:544
 msgid "Loading translations…"
 msgstr ""
 
-#: ubuntu_l10n/app.py:335
+#: ubuntu_l10n/app.py:381
 msgid "Welcome to Ubuntu L10n!"
 msgstr ""
 
-#: ubuntu_l10n/app.py:337
+#: ubuntu_l10n/app.py:383
 msgid ""
 "This app shows translation progress for Ubuntu packages on Launchpad.\n"
 "\n"
@@ -148,72 +133,68 @@ msgid ""
 "Data is cached locally for 1 hour to reduce load on Launchpad servers."
 msgstr ""
 
-#: ubuntu_l10n/app.py:346
+#: ubuntu_l10n/app.py:392
 msgid "Get Started"
 msgstr ""
 
-#: ubuntu_l10n/app.py:419
+#: ubuntu_l10n/app.py:465
 #, python-brace-format
 msgid "<b>Overall:</b> {pct}% ({translated}/{total} strings)"
 msgstr ""
 
-#: ubuntu_l10n/app.py:423
+#: ubuntu_l10n/app.py:469
 #, python-brace-format
 msgid "<b>Packages:</b> {count} total, {fully} at 100%, {zero} at 0%"
 msgstr ""
 
-#: ubuntu_l10n/app.py:426
+#: ubuntu_l10n/app.py:472
 msgid "<b>Top 10 most translated:</b>"
 msgstr ""
 
-#: ubuntu_l10n/app.py:430
+#: ubuntu_l10n/app.py:476
 msgid "<b>Top 10 least translated:</b>"
 msgstr ""
 
-#: ubuntu_l10n/app.py:436
+#: ubuntu_l10n/app.py:482
 msgid "Language Statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:440 ubuntu_l10n/app.py:467
+#: ubuntu_l10n/app.py:486 ubuntu_l10n/app.py:513
 msgid "Close"
 msgstr ""
 
-#: ubuntu_l10n/app.py:454
+#: ubuntu_l10n/app.py:500
 msgid ""
 "Ubuntu L10n uses Launchpad's public translation pages.\n"
 "No API key is required."
 msgstr ""
 
-#: ubuntu_l10n/app.py:462
+#: ubuntu_l10n/app.py:508
 msgid "Clear Cache"
 msgstr ""
 
-#: ubuntu_l10n/app.py:491
+#: ubuntu_l10n/app.py:537
 msgid "View Ubuntu translation statistics from Launchpad"
 msgstr ""
 
-#: ubuntu_l10n/app.py:509
+#: ubuntu_l10n/app.py:555
 #, python-brace-format
 msgid "Loading… {loaded}/{total} templates"
 msgstr ""
 
-#: ubuntu_l10n/app.py:540
+#: ubuntu_l10n/app.py:594
 #, python-brace-format
 msgid "Error: {error}"
 msgstr ""
 
-#: ubuntu_l10n/app.py:573
+#: ubuntu_l10n/app.py:627
 #, python-brace-format
 msgid ""
 "{count} templates · {translated}/{total} strings ({pct}%) · {untranslated} "
 "untranslated · {fully} fully translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:586
+#: ubuntu_l10n/app.py:640
 #, python-brace-format
 msgid "Cached ({age} min ago)"
-msgstr ""
-
-#: data/se.danielnylander.pcap-viewer.desktop.in:11
-msgid "pcap;network;packet;capture;sniffer;"
 msgstr ""
