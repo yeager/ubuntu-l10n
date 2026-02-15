@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e95420"/>
+      <stop offset="100%" stop-color="#c34113"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="20" fill="url(#bg)"/>
+  <!-- Ubuntu circle of friends simplified -->
+  <circle cx="64" cy="52" r="28" fill="none" stroke="white" stroke-width="4" opacity="0.9"/>
+  <circle cx="64" cy="24" r="7" fill="white" opacity="0.9"/>
+  <circle cx="40" cy="68" r="7" fill="white" opacity="0.9"/>
+  <circle cx="88" cy="68" r="7" fill="white" opacity="0.9"/>
+  <!-- Translation percentage -->
+  <rect x="24" y="96" width="80" height="8" rx="4" fill="white" opacity="0.25"/>
+  <rect x="24" y="96" width="64" height="8" rx="4" fill="#57e389" opacity="0.85"/>
+  <!-- Globe hint -->
+  <text x="64" y="56" font-family="sans-serif" font-size="16" fill="white" text-anchor="middle" opacity="0.6">🌍</text>
+  <!-- Label -->
+  <text x="64" y="118" font-family="sans-serif" font-size="9" fill="white" text-anchor="middle" opacity="0.6">Launchpad</text>
+</svg>
