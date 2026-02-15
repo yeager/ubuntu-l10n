@@ -1,5 +1,5 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Daniel Nylander
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the ubuntu-l10n package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
@@ -9,9 +9,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: ubuntu-l10n\n"
-"Report-Msgid-Bugs-To: daniel@danielnylander.se\n"
-"POT-Creation-Date: 2026-02-15 10:55+0100\n"
+"Project-Id-Version: ubuntu-l10n 0.2.5\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-15 15:02+0100\n"
 "PO-Revision-Date: 2026-02-14 08:45+0000\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>, 2026\n"
 "Language-Team: Swedish (https://app.transifex.com/danielnylander/teams/304749/sv/)\n"
@@ -21,112 +21,124 @@ msgstr ""
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ubuntu_l10n/app.py:122
+#: ubuntu_l10n/app.py:176
 #, python-brace-format
 msgid "{translated}/{total} translated"
 msgstr "{translated}/{total} översatta"
 
-#: ubuntu_l10n/app.py:126
+#: ubuntu_l10n/app.py:180
 #, python-brace-format
 msgid "{count} untranslated"
 msgstr "{count} icke-översatta"
 
-#: ubuntu_l10n/app.py:129
+#: ubuntu_l10n/app.py:183
 #, python-brace-format
 msgid "{count} need review"
 msgstr "{count} behöver granskning"
 
-#: ubuntu_l10n/app.py:132
+#: ubuntu_l10n/app.py:186
 #, python-brace-format
 msgid "{count} changed"
 msgstr "{count} ändrade"
 
-#: ubuntu_l10n/app.py:144
+#: ubuntu_l10n/app.py:198
 #, python-brace-format
 msgid "{date} by {editor}"
 msgstr "{date} av {editor}"
 
-#: ubuntu_l10n/app.py:157
+#: ubuntu_l10n/app.py:211
 msgid "Ubuntu Translation Statistics"
 msgstr "Översättningsstatistik för Ubuntu"
 
-#: ubuntu_l10n/app.py:179 ubuntu_l10n/app.py:528
+#: ubuntu_l10n/app.py:233 ubuntu_l10n/app.py:657
 msgid "Ubuntu L10n"
 msgstr "Ubuntu L10n"
 
-#: ubuntu_l10n/app.py:180
+#: ubuntu_l10n/app.py:234
 msgid "Translation Statistics"
 msgstr "Översättningsstatistik"
 
-#: ubuntu_l10n/app.py:186
+#: ubuntu_l10n/app.py:240
 msgid "Refresh data"
 msgstr "Uppdatera data"
 
-#: ubuntu_l10n/app.py:192
+#: ubuntu_l10n/app.py:246
 msgid "Toggle heatmap view"
 msgstr "Växla värmekarta"
 
-#: ubuntu_l10n/app.py:198 ubuntu_l10n/app.py:498
+#: ubuntu_l10n/app.py:252 ubuntu_l10n/app.py:627
 msgid "Settings"
 msgstr "Inställningar"
 
-#: ubuntu_l10n/app.py:199
+#: ubuntu_l10n/app.py:253
+msgid "Notifications"
+msgstr ""
+
+#: ubuntu_l10n/app.py:254
 msgid "About"
 msgstr "Om"
 
-#: ubuntu_l10n/app.py:201
+#: ubuntu_l10n/app.py:256
 msgid "Menu"
 msgstr "Meny"
 
-#: ubuntu_l10n/app.py:238
+#: ubuntu_l10n/app.py:261
+msgid "Toggle dark/light theme"
+msgstr ""
+
+#: ubuntu_l10n/app.py:265
+msgid "Export data"
+msgstr ""
+
+#: ubuntu_l10n/app.py:309
 msgid "Release:"
 msgstr "Utgåva:"
 
-#: ubuntu_l10n/app.py:259
+#: ubuntu_l10n/app.py:330
 msgid "Language:"
 msgstr "Språk:"
 
-#: ubuntu_l10n/app.py:267
+#: ubuntu_l10n/app.py:338
 msgid "Name (A-Z)"
 msgstr "Namn (A-Ö)"
 
-#: ubuntu_l10n/app.py:268
+#: ubuntu_l10n/app.py:339
 msgid "Most translated"
 msgstr "Mest översatta"
 
-#: ubuntu_l10n/app.py:269
+#: ubuntu_l10n/app.py:340
 msgid "Least translated"
 msgstr "Minst översatta"
 
-#: ubuntu_l10n/app.py:270
+#: ubuntu_l10n/app.py:341
 msgid "Most strings"
 msgstr "Flest strängar"
 
-#: ubuntu_l10n/app.py:271
+#: ubuntu_l10n/app.py:342
 msgid "Last updated"
 msgstr "Senast uppdaterad"
 
-#: ubuntu_l10n/app.py:280
+#: ubuntu_l10n/app.py:351
 msgid "Sort:"
 msgstr "Sortera:"
 
-#: ubuntu_l10n/app.py:287
+#: ubuntu_l10n/app.py:358
 msgid "Language statistics"
 msgstr "Språkstatistik"
 
-#: ubuntu_l10n/app.py:293
+#: ubuntu_l10n/app.py:364
 msgid "Search packages…"
 msgstr "Sök igenom paket…"
 
-#: ubuntu_l10n/app.py:326 ubuntu_l10n/app.py:544
+#: ubuntu_l10n/app.py:397 ubuntu_l10n/app.py:676
 msgid "Loading translations…"
 msgstr "Läser in översättningar…"
 
-#: ubuntu_l10n/app.py:381
+#: ubuntu_l10n/app.py:458
 msgid "Welcome to Ubuntu L10n!"
 msgstr "Välkommen till Ubuntu L10n!"
 
-#: ubuntu_l10n/app.py:383
+#: ubuntu_l10n/app.py:460
 msgid ""
 "This app shows translation progress for Ubuntu packages on Launchpad.\n"
 "\n"
@@ -144,37 +156,49 @@ msgstr ""
 "\n"
 "Uppgifterna cachelagras lokalt i en timme för att minska belastningen på Launchpad-servrarna."
 
-#: ubuntu_l10n/app.py:392
+#: ubuntu_l10n/app.py:469
 msgid "Get Started"
 msgstr "Kom igång"
 
-#: ubuntu_l10n/app.py:465
+#: ubuntu_l10n/app.py:523
+msgid "Export Data"
+msgstr ""
+
+#: ubuntu_l10n/app.py:524
+msgid "Choose export format:"
+msgstr ""
+
+#: ubuntu_l10n/app.py:525
+msgid "Cancel"
+msgstr ""
+
+#: ubuntu_l10n/app.py:594
 #, python-brace-format
 msgid "<b>Overall:</b> {pct}% ({translated}/{total} strings)"
 msgstr "<b>Totalt:</b> {pct} % ({translated}/{total} strängar)"
 
-#: ubuntu_l10n/app.py:469
+#: ubuntu_l10n/app.py:598
 #, python-brace-format
 msgid "<b>Packages:</b> {count} total, {fully} at 100%, {zero} at 0%"
 msgstr "<b>Paket:</b> {count} totalt, {fully} på 100%, {zero} på 0%"
 
-#: ubuntu_l10n/app.py:472
+#: ubuntu_l10n/app.py:601
 msgid "<b>Top 10 most translated:</b>"
 msgstr "<b>De 10 mest översatta:</b>"
 
-#: ubuntu_l10n/app.py:476
+#: ubuntu_l10n/app.py:605
 msgid "<b>Top 10 least translated:</b>"
 msgstr "<b>De 10 minst översatta:</b>"
 
-#: ubuntu_l10n/app.py:482
+#: ubuntu_l10n/app.py:611
 msgid "Language Statistics"
 msgstr "Språkstatistik"
 
-#: ubuntu_l10n/app.py:486 ubuntu_l10n/app.py:513
+#: ubuntu_l10n/app.py:615 ubuntu_l10n/app.py:642
 msgid "Close"
 msgstr "Stäng"
 
-#: ubuntu_l10n/app.py:500
+#: ubuntu_l10n/app.py:629
 msgid ""
 "Ubuntu L10n uses Launchpad's public translation pages.\n"
 "No API key is required."
@@ -182,25 +206,34 @@ msgstr ""
 "Ubuntu L10n använder Launchpads publika översättningssidor.\n"
 "Ingen API-nyckel krävs."
 
-#: ubuntu_l10n/app.py:508
+#: ubuntu_l10n/app.py:637
 msgid "Clear Cache"
 msgstr "Töm cache"
 
-#: ubuntu_l10n/app.py:537
+#: ubuntu_l10n/app.py:667
 msgid "View Ubuntu translation statistics from Launchpad"
 msgstr "Visa Ubuntu-översättningsstatistik från Launchpad"
 
-#: ubuntu_l10n/app.py:555
+#: ubuntu_l10n/app.py:687
 #, python-brace-format
 msgid "Loading… {loaded}/{total} templates"
 msgstr "Läser in… {loaded}/{total} mallar"
 
-#: ubuntu_l10n/app.py:594
+#: ubuntu_l10n/app.py:724
+msgid "Ubuntu L10n: Low translations"
+msgstr ""
+
+#: ubuntu_l10n/app.py:725
+#, python-brace-format
+msgid "{count} packages below 50%: {names}"
+msgstr ""
+
+#: ubuntu_l10n/app.py:735
 #, python-brace-format
 msgid "Error: {error}"
 msgstr "Fel: {error}"
 
-#: ubuntu_l10n/app.py:627
+#: ubuntu_l10n/app.py:768
 #, python-brace-format
 msgid ""
 "{count} templates · {translated}/{total} strings ({pct}%) · {untranslated} "
@@ -209,7 +242,7 @@ msgstr ""
 "{count} mallar · {translated}/{total} strängar ({pct}%) · {untranslated} "
 "icke-översatta · {fully} helt översatta"
 
-#: ubuntu_l10n/app.py:640
+#: ubuntu_l10n/app.py:781
 #, python-brace-format
 msgid "Cached ({age} min ago)"
 msgstr "Cachad ({age} min sedan)"
