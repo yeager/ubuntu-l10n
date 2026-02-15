@@ -484,12 +484,12 @@ class MainWindow(Adw.ApplicationWindow):
             version=VERSION,
             developer_name="Daniel Nylander",
             developers=["Daniel Nylander <daniel@danielnylander.se>"],
-            copyright="© 2025 Daniel Nylander",
+            copyright="© 2026 Daniel Nylander",
             license_type=Gtk.License.GPL_3_0,
             website="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
-            comments=_("A localization tool by Daniel Nylander"),
-            translator_credits=_("Translate this app: https://app.transifex.com/danielnylander/ubuntu-l10n/"),
+            comments=_("View Ubuntu translation statistics from Launchpad"),
+            translator_credits="Daniel Nylander <daniel@danielnylander.se>",
         )
         about.present()
 
