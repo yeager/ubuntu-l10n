@@ -1,66 +1,45 @@
-# Ubuntu L10n — Translation Statistics Viewer
+# Ubuntu L10n
 
-A GTK4/Libadwaita app that shows the current translation status for Ubuntu packages via Launchpad.
+A GTK4/Adwaita application for viewing Ubuntu translation statistics from Launchpad.
 
-![screenshot](screenshot.png)
+![Screenshot](data/screenshots/screenshot-01.png)
 
 ## Features
 
-- 📊 Translation status per package (translated/untranslated/fuzzy)
-- 🎨 Color-coded progress bars (green/yellow/red)
-- 🌍 Language selector (defaults to system language)
-- 📦 Distribution selector: Resolute (26.04), Questing, Plucky, Oracular, Noble, Focal
-- 🔍 Search/filter packages
-- ↕️ Sort by most/least translated
-- 🔗 Click any package to open its Launchpad translation page
-- 📈 Overall progress bar with summary statistics
+- Translation status per package (translated/untranslated/fuzzy)
+- Color-coded progress bars (green/yellow/red)
+- Language selector (defaults to system language)
+- Distribution selector: Resolute (26.04), Questing, Plucky, Oracular, Noble, Focal
+- Search/filter packages
+- Sort by most/least translated
+- Click any package to open its Launchpad translation page
+- Overall progress bar with summary statistics
 
-## Requirements
+## Installation
 
-- Python 3.10+
-- GTK 4
-- libadwaita
-- PyGObject, beautifulsoup4, requests, lxml
-
-### Ubuntu/Debian
+### Debian/Ubuntu
 
 ```bash
-sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 \
-    python3-bs4 python3-requests python3-lxml
+# Add repository
+curl -fsSL https://yeager.github.io/debian-repo/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/yeager-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/yeager-archive-keyring.gpg] https://yeager.github.io/debian-repo stable main" | sudo tee /etc/apt/sources.list.d/yeager.list
+sudo apt update
+sudo apt install ubuntu-l10n
 ```
 
-### Fedora
+### Fedora/RHEL
 
 ```bash
-sudo dnf install python3-gobject gtk4 libadwaita \
-    python3-beautifulsoup4 python3-requests python3-lxml
+sudo dnf config-manager --add-repo https://yeager.github.io/rpm-repo/yeager.repo
+sudo dnf install ubuntu-l10n
 ```
 
-### pip (for other dependencies)
+### From source
 
 ```bash
-pip install beautifulsoup4 requests lxml
-```
-
-## Usage
-
-```bash
-# Run directly
-python -m ubuntu_l10n.app
-
-# Or install and run
-pip install -e .
+pip install .
 ubuntu-l10n
 ```
-
-## Data Sources
-
-- **Launchpad**: `https://translations.launchpad.net/ubuntu/{release}/+lang/{lang}/+index`
-- **Weblate**: `https://hosted.weblate.org/projects/ubuntu-desktop-translations/`
-
-## License
-
-GPL-3.0-or-later — Daniel Nylander <daniel@danielnylander.se>
 
 ## 🌍 Contributing Translations
 
@@ -82,3 +61,7 @@ Arabic, Czech, Danish, German, Spanish, Finnish, French, Italian, Japanese, Kore
 - Translations are pulled back and included in releases
 
 New language? Open an [issue](https://github.com/yeager/ubuntu-l10n/issues) and we'll add it!
+
+## License
+
+GPL-3.0-or-later — Daniel Nylander <daniel@danielnylander.se>
