@@ -6,3 +6,9 @@ file_filter  = po/<lang>.po
 source_file  = po/ubuntu-l10n.pot
 source_lang  = en
 type         = PO
+
+[o:danielnylander:p:ubuntu-l10n:r:ubuntu-l10n-man]
+file_filter  = po/man/<lang>.po
+source_file  = po/man/ubuntu-l10n.1.pot
+source_lang  = en
+type         = PO
