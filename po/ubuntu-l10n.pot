@@ -231,3 +231,11 @@ msgstr ""
 #, python-brace-format
 msgid "Cached ({age} min ago)"
 msgstr ""
+
+#: ubuntu-l10n/se.danielnylander.ubuntu-l10n.desktop.in
+msgid "Ubuntu/Launchpad translation statistics viewer"
+msgstr ""
+
+#: ubuntu-l10n/se.danielnylander.ubuntu-l10n.desktop.in
+msgid "translation;localization;ubuntu;launchpad;l10n;"
+msgstr ""
