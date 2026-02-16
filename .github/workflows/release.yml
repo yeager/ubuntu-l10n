@@ -71,7 +71,7 @@ jobs:
             cp "$icon" $PKG/usr/share/icons/hicolor/scalable/apps/
           fi
 
-          printf '#!/usr/bin/env python3\nfrom ubuntu_l10n.main import main\nmain()\n' > $PKG/usr/bin/ubuntu-l10n
+          printf '#!/usr/bin/env python3\nfrom ubuntu_l10n.app import main\nmain()\n' > $PKG/usr/bin/ubuntu-l10n
           chmod +x $PKG/usr/bin/ubuntu-l10n
 
           printf 'Package: ubuntu-l10n\nVersion: %s-1\nSection: devel\nPriority: optional\nArchitecture: all\nDepends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1\nMaintainer: Daniel Nylander <daniel@danielnylander.se>\nHomepage: https://github.com/yeager/ubuntu-l10n\nDescription: Ubuntu/Launchpad translation statistics viewer\n' "$VERSION" > $PKG/DEBIAN/control
