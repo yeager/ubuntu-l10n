@@ -95,7 +95,7 @@ def _load_notify_config():
     try:
         return _json.loads(_notify_config_path().read_text())
     except Exception:
-        return {"enabled": False}
+        return {"enabled": True}
 
 
 def _save_notify_config(config):
@@ -671,6 +671,7 @@ class MainWindow(Adw.ApplicationWindow):
         about.present(self)
 
     def _load_data(self, force=False):
+        self._spinner.start()
         self._stack.set_visible_child_name("loading")
         self._loading_label.set_text(_("Loading translations…"))
         distro = self._current_distro
@@ -712,6 +713,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_data_loaded(self, packages: list[PackageStats],
                         from_cache: bool = False, age_minutes: int = 0):
+        self._spinner.stop()
         self._update_last_updated()
         self.packages = packages
         self._from_cache = from_cache
@@ -731,6 +733,7 @@ class MainWindow(Adw.ApplicationWindow):
             self._stack.set_visible_child_name("content")
 
     def _on_data_error(self, error: str):
+        self._spinner.stop()
         self._loading_label.set_text(_("Error: {error}").format(error=error))
 
     def _filter_and_display(self):
