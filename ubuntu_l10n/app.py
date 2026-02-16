@@ -36,7 +36,7 @@ gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 
 
 def _setup_heatmap_css():
@@ -128,40 +128,26 @@ class PackageRow(Gtk.Box):
     """A single package row with progress bar and stats."""
 
     def __init__(self, pkg: PackageStats):
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        super().__init__(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.pkg = pkg
-        self.set_margin_start(12)
-        self.set_margin_end(12)
-        self.set_margin_top(6)
-        self.set_margin_bottom(6)
+        self.set_margin_start(8)
+        self.set_margin_end(8)
+        self.set_margin_top(2)
+        self.set_margin_bottom(2)
 
-        # Top line: name + percentage
-        top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        top.set_hexpand(True)
-
+        # Name (left)
         name_label = Gtk.Label(label=pkg.name)
         name_label.set_halign(Gtk.Align.START)
         name_label.set_hexpand(True)
-        name_label.add_css_class("heading")
-        top.append(name_label)
+        name_label.set_ellipsize(3)  # PANGO_ELLIPSIZE_END
+        name_label.set_width_chars(20)
+        self.append(name_label)
 
-        pct_label = Gtk.Label(label=f"{pkg.translated_pct:.1f}%")
-        pct_label.set_halign(Gtk.Align.END)
-        if pkg.translated_pct >= 100:
-            pct_label.add_css_class("success")
-        elif pkg.translated_pct >= 80:
-            pct_label.add_css_class("warning")
-        else:
-            pct_label.add_css_class("error")
-        pct_label.add_css_class("caption-heading")
-        top.append(pct_label)
-
-        self.append(top)
-
-        # Progress bar
+        # Progress bar (middle, compact)
         progress = Gtk.ProgressBar()
         progress.set_fraction(pkg.translated_pct / 100.0)
         progress.set_hexpand(True)
+        progress.set_valign(Gtk.Align.CENTER)
         if pkg.translated_pct >= 100:
             progress.add_css_class("success")
         elif pkg.translated_pct >= 80:
@@ -170,40 +156,29 @@ class PackageRow(Gtk.Box):
             progress.add_css_class("error")
         self.append(progress)
 
-        # Bottom line: stats
-        stats_parts = []
+        # Percentage (right)
+        pct_label = Gtk.Label(label=f"{pkg.translated_pct:.0f}%")
+        pct_label.set_halign(Gtk.Align.END)
+        pct_label.set_width_chars(5)
+        if pkg.translated_pct >= 100:
+            pct_label.add_css_class("success")
+        elif pkg.translated_pct >= 80:
+            pct_label.add_css_class("warning")
+        else:
+            pct_label.add_css_class("error")
+        self.append(pct_label)
+
+        # Tooltip with details
+        tips = []
         if pkg.total > 0:
-            stats_parts.append(
-                _("{translated}/{total} translated").format(
-                    translated=pkg.translated, total=pkg.total))
+            tips.append(f"{pkg.translated}/{pkg.total}")
         if pkg.untranslated > 0:
-            stats_parts.append(
-                _("{count} untranslated").format(count=pkg.untranslated))
+            tips.append(f"{pkg.untranslated} untranslated")
         if pkg.need_review > 0:
-            stats_parts.append(
-                _("{count} need review").format(count=pkg.need_review))
-        if pkg.changed > 0:
-            stats_parts.append(
-                _("{count} changed").format(count=pkg.changed))
-
-        bottom = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        stats_label = Gtk.Label(label=" · ".join(stats_parts))
-        stats_label.set_halign(Gtk.Align.START)
-        stats_label.set_hexpand(True)
-        stats_label.add_css_class("dim-label")
-        stats_label.add_css_class("caption")
-        bottom.append(stats_label)
-
+            tips.append(f"{pkg.need_review} review")
         if pkg.last_edited:
-            date_label = Gtk.Label(
-                label=_("{date} by {editor}").format(
-                    date=pkg.last_edited, editor=pkg.last_editor))
-            date_label.set_halign(Gtk.Align.END)
-            date_label.add_css_class("dim-label")
-            date_label.add_css_class("caption")
-            bottom.append(date_label)
-
-        self.append(bottom)
+            tips.append(f"{pkg.last_edited}")
+        self.set_tooltip_text(" · ".join(tips))
 
 
 class MainWindow(Adw.ApplicationWindow):
@@ -278,8 +253,13 @@ class MainWindow(Adw.ApplicationWindow):
         about_action.connect("activate", self._on_about)
         self.add_action(about_action)
 
-        notif_action = Gio.SimpleAction(name="toggle-notifications")
-        notif_action.connect("activate", lambda *_: _save_notify_config({"enabled": not _load_notify_config().get("enabled", False)}))
+        notif_enabled = _load_notify_config().get("enabled", False)
+        notif_action = Gio.SimpleAction.new_stateful(
+            "toggle-notifications",
+            None,
+            GLib.Variant.new_boolean(notif_enabled),
+        )
+        notif_action.connect("activate", self._on_toggle_notifications)
         self.add_action(notif_action)
 
         # Content box
@@ -506,6 +486,17 @@ class MainWindow(Adw.ApplicationWindow):
     @property
     def _current_lang(self) -> str:
         return self._lang_items[self._lang_drop.get_selected()]
+
+    def _on_toggle_notifications(self, action, _param):
+        current = action.get_state().get_boolean()
+        new_state = not current
+        action.set_state(GLib.Variant.new_boolean(new_state))
+        _save_notify_config({"enabled": new_state})
+        if HAS_NOTIFY and new_state:
+            _send_notification(
+                _("Notifications enabled"),
+                _("You will be notified about translation changes"),
+            )
 
     def _on_theme_toggle(self, _btn):
         sm = Adw.StyleManager.get_default()
