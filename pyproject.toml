@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ubuntu-l10n"
-version = "0.2.5"
+version = "0.2.6"
 description = "Ubuntu/Launchpad translation statistics viewer"
 readme = "README.md"
 license = "GPL-3.0-or-later"
