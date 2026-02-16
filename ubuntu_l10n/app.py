@@ -1,7 +1,7 @@
 """Ubuntu Translation Statistics - GTK4/Libadwaita app."""
 
 import csv
-import datetime as _dt_now
+from datetime import datetime as _dt_now
 import gettext
 import json
 import locale
@@ -36,7 +36,7 @@ gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
-VERSION = "0.3.2"
+VERSION = "0.3.3"
 
 
 def _setup_heatmap_css():
