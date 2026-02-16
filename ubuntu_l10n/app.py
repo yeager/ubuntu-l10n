@@ -1,6 +1,7 @@
 """Ubuntu Translation Statistics - GTK4/Libadwaita app."""
 
 import csv
+import datetime as _dt_now
 import gettext
 import json
 import locale
@@ -652,8 +653,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_about(self, _action, _param):
         """Show about dialog."""
-        about = Adw.AboutWindow(
-            transient_for=self,
+        about = Adw.AboutDialog(
             application_name=_("Ubuntu L10n"),
             application_icon="ubuntu-l10n",
             version=VERSION,
@@ -663,13 +663,12 @@ class MainWindow(Adw.ApplicationWindow):
             license_type=Gtk.License.GPL_3_0,
             website="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
-            translate_url="https://app.transifex.com/danielnylander/ubuntu-l10n/",
             comments=_("View Ubuntu translation statistics from Launchpad"),
             translator_credits="Daniel Nylander <daniel@danielnylander.se>",
         )
         about.set_debug_info(_get_system_info())
         about.set_debug_info_filename("ubuntu-l10n-debug.txt")
-        about.present()
+        about.present(self)
 
     def _load_data(self, force=False):
         self._stack.set_visible_child_name("loading")
