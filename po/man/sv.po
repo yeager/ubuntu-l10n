@@ -43,7 +43,7 @@ msgstr "Daniel Nylander"
 #: data/man/ubuntu-l10n.1:1
 #, no-wrap
 msgid "Ubuntu L10n Manual"
-msgstr ""
+msgstr "Manual för Ubuntu L10n"
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:2
@@ -54,7 +54,7 @@ msgstr "NAMN"
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:4
 msgid "ubuntu-l10n - Ubuntu translation statistics from Launchpad"
-msgstr ""
+msgstr "ubuntu-l10n - Ubuntu-översättningsstatistik från Launchpad"
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:4
@@ -82,6 +82,11 @@ msgid ""
 "Questing, Plucky, Oracular, Noble, Focal), provides search and sorting, and "
 "links to Launchpad translation pages."
 msgstr ""
+"B<ubuntu-l10n> är ett GTK4/Adwaita-program för att visa Ubuntu-"
+"översättningsstatistik från Launchpad. Det visar översättningsstatus per "
+"paket med färgkodade förloppsindikatorer, stöder flera Ubuntu-utgåvor "
+"(Resolute, Questing, Plucky, Oracular, Noble, Focal), erbjuder sök- och "
+"sorteringsfunktioner samt länkar till Launchpads översättningssidor."
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:8
@@ -98,7 +103,7 @@ msgstr "B<--help>"
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:12
 msgid "Show help message and exit."
-msgstr ""
+msgstr "Visa hjälpmeddelande och avsluta."
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:12
@@ -115,7 +120,7 @@ msgstr "I<~/.config/ubuntu-l10n/>"
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:16
 msgid "Configuration files."
-msgstr ""
+msgstr "Konfigurationsfiler."
 
 #. type: TP
 #: data/man/ubuntu-l10n.1:16
@@ -126,24 +131,24 @@ msgstr "I<~/.cache/ubuntu-l10n/>"
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:19
 msgid "Cached data."
-msgstr ""
+msgstr "Cachat data."
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:19
 #, no-wrap
 msgid "BUGS"
-msgstr ""
+msgstr "BUGGAR"
 
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:21
 msgid "Report bugs at https://github.com/yeager/ubuntu-l10n/issues"
-msgstr ""
+msgstr "Rapportera buggar på https://github.com/yeager/ubuntu-l10n/issues"
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:21
 #, no-wrap
 msgid "AUTHOR"
-msgstr ""
+msgstr "UPPHOVSPERSON"
 
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:23
@@ -159,4 +164,4 @@ msgstr "SE ÄVEN"
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:24
 msgid "Project homepage: https://github.com/yeager/ubuntu-l10n"
-msgstr ""
+msgstr "Projektets webbsida: https://github.com/yeager/ubuntu-l10n"

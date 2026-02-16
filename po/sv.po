@@ -72,7 +72,7 @@ msgstr "Inställningar"
 
 #: ubuntu_l10n/app.py:253
 msgid "Notifications"
-msgstr ""
+msgstr "Aviseringar"
 
 #: ubuntu_l10n/app.py:254
 msgid "About"
@@ -84,11 +84,11 @@ msgstr "Meny"
 
 #: ubuntu_l10n/app.py:261
 msgid "Toggle dark/light theme"
-msgstr ""
+msgstr "Växla mörkt/ljust tema"
 
 #: ubuntu_l10n/app.py:265
 msgid "Export data"
-msgstr ""
+msgstr "Exportera data"
 
 #: ubuntu_l10n/app.py:309
 msgid "Release:"
@@ -162,15 +162,15 @@ msgstr "Kom igång"
 
 #: ubuntu_l10n/app.py:523
 msgid "Export Data"
-msgstr ""
+msgstr "Exportera data"
 
 #: ubuntu_l10n/app.py:524
 msgid "Choose export format:"
-msgstr ""
+msgstr "Välj exportformat:"
 
 #: ubuntu_l10n/app.py:525
 msgid "Cancel"
-msgstr ""
+msgstr "Avbryt"
 
 #: ubuntu_l10n/app.py:594
 #, python-brace-format
@@ -221,12 +221,12 @@ msgstr "Läser in… {loaded}/{total} mallar"
 
 #: ubuntu_l10n/app.py:724
 msgid "Ubuntu L10n: Low translations"
-msgstr ""
+msgstr "Ubuntu L10n: Låga översättningar"
 
 #: ubuntu_l10n/app.py:725
 #, python-brace-format
 msgid "{count} packages below 50%: {names}"
-msgstr ""
+msgstr "{count} paket under 50%: {names}"
 
 #: ubuntu_l10n/app.py:735
 #, python-brace-format
