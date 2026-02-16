@@ -36,7 +36,7 @@ gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 
 
 def _setup_heatmap_css():
