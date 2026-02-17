@@ -109,51 +109,51 @@ msgstr "Visa hjälpmeddelande och avsluta."
 #: data/man/ubuntu-l10n.1:12
 #, no-wrap
 msgid "KEYBOARD SHORTCUTS"
-msgstr ""
+msgstr "TANGENTBORDSGENVÄGAR"
 
 #. type: TP
 #: data/man/ubuntu-l10n.1:13
 #, no-wrap
 msgid "B<Ctrl+Q>"
-msgstr ""
+msgstr "B<Ctrl+Q>"
 
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:16
 msgid "Quit the application"
-msgstr ""
+msgstr "Avsluta applikationen"
 
 #. type: TP
 #: data/man/ubuntu-l10n.1:16
 #, no-wrap
 msgid "B<F5>"
-msgstr ""
+msgstr "B<F5>"
 
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:19
 msgid "Refresh the current data"
-msgstr ""
+msgstr "Uppdatera aktuellt data"
 
 #. type: TP
 #: data/man/ubuntu-l10n.1:19
 #, no-wrap
 msgid "B<Ctrl+/>"
-msgstr ""
+msgstr "B<Ctrl+/>"
 
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:22
 msgid "Show keyboard shortcuts dialog"
-msgstr ""
+msgstr "Visa dialog för tangentbordsgenvägar"
 
 #. type: TP
 #: data/man/ubuntu-l10n.1:22
 #, no-wrap
 msgid "B<Ctrl+E>"
-msgstr ""
+msgstr "B<Ctrl+E>"
 
 #. type: Plain text
 #: data/man/ubuntu-l10n.1:25
 msgid "Export current view to CSV or JSON format"
-msgstr ""
+msgstr "Exportera aktuell vy till CSV eller JSON-format"
 
 #. type: SH
 #: data/man/ubuntu-l10n.1:25
