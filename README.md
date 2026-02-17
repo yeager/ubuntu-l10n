@@ -1,5 +1,9 @@
 # Ubuntu L10n
 
+## Screenshot
+
+![Ubuntu L10n](screenshots/main.png)
+
 A GTK4/Adwaita application for viewing Ubuntu translation statistics from Launchpad.
 
 ![Screenshot](data/screenshots/screenshot-01.png)
