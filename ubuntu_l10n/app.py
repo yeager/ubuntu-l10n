@@ -655,7 +655,7 @@ class MainWindow(Adw.ApplicationWindow):
             website="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
             comments=_("View Ubuntu translation statistics from Launchpad"),
-            translator_credits="Daniel Nylander <daniel@danielnylander.se>",
+            translator_credits=_("Translate this app: https://www.transifex.com/danielnylander/ubuntu-l10n/"),
         )
         about.set_debug_info(_get_system_info())
         about.set_debug_info_filename("ubuntu-l10n-debug.txt")
