@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the ubuntu-l10n package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: ubuntu-l10n\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-16 17:16+0100\n"
+"POT-Creation-Date: 2026-02-22 17:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,124 +17,99 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ubuntu_l10n/app.py:177
-#, python-brace-format
-msgid "{translated}/{total} translated"
-msgstr ""
-
-#: ubuntu_l10n/app.py:181
-#, python-brace-format
-msgid "{count} untranslated"
-msgstr ""
-
-#: ubuntu_l10n/app.py:184
-#, python-brace-format
-msgid "{count} need review"
-msgstr ""
-
 #: ubuntu_l10n/app.py:187
-#, python-brace-format
-msgid "{count} changed"
-msgstr ""
-
-#: ubuntu_l10n/app.py:199
-#, python-brace-format
-msgid "{date} by {editor}"
-msgstr ""
-
-#: ubuntu_l10n/app.py:212
 msgid "Ubuntu Translation Statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:234 ubuntu_l10n/app.py:657
+#: ubuntu_l10n/app.py:209 ubuntu_l10n/app.py:648
 msgid "Ubuntu L10n"
 msgstr ""
 
-#: ubuntu_l10n/app.py:235
+#: ubuntu_l10n/app.py:210
 msgid "Translation Statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:241
+#: ubuntu_l10n/app.py:216
 msgid "Refresh data"
 msgstr ""
 
-#: ubuntu_l10n/app.py:247
+#: ubuntu_l10n/app.py:222
 msgid "Toggle heatmap view"
 msgstr ""
 
-#: ubuntu_l10n/app.py:253 ubuntu_l10n/app.py:628
+#: ubuntu_l10n/app.py:228 ubuntu_l10n/app.py:619
 msgid "Settings"
 msgstr ""
 
-#: ubuntu_l10n/app.py:254
+#: ubuntu_l10n/app.py:229
 msgid "Notifications"
 msgstr ""
 
-#: ubuntu_l10n/app.py:255
+#: ubuntu_l10n/app.py:230
 msgid "About"
 msgstr ""
 
-#: ubuntu_l10n/app.py:257
+#: ubuntu_l10n/app.py:232
 msgid "Menu"
 msgstr ""
 
-#: ubuntu_l10n/app.py:262
+#: ubuntu_l10n/app.py:237
 msgid "Toggle dark/light theme"
 msgstr ""
 
-#: ubuntu_l10n/app.py:266
+#: ubuntu_l10n/app.py:241
 msgid "Export data"
 msgstr ""
 
-#: ubuntu_l10n/app.py:310
+#: ubuntu_l10n/app.py:290
 msgid "Release:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:331
+#: ubuntu_l10n/app.py:311
 msgid "Language:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:339
+#: ubuntu_l10n/app.py:319
 msgid "Name (A-Z)"
 msgstr ""
 
-#: ubuntu_l10n/app.py:340
+#: ubuntu_l10n/app.py:320
 msgid "Most translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:341
+#: ubuntu_l10n/app.py:321
 msgid "Least translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:342
+#: ubuntu_l10n/app.py:322
 msgid "Most strings"
 msgstr ""
 
-#: ubuntu_l10n/app.py:343
+#: ubuntu_l10n/app.py:323
 msgid "Last updated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:352
+#: ubuntu_l10n/app.py:332
 msgid "Sort:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:359
+#: ubuntu_l10n/app.py:339
 msgid "Language statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:365
+#: ubuntu_l10n/app.py:345
 msgid "Search packages…"
 msgstr ""
 
-#: ubuntu_l10n/app.py:398 ubuntu_l10n/app.py:676
+#: ubuntu_l10n/app.py:378 ubuntu_l10n/app.py:667
 msgid "Loading translations…"
 msgstr ""
 
-#: ubuntu_l10n/app.py:459
+#: ubuntu_l10n/app.py:439
 msgid "Welcome to Ubuntu L10n!"
 msgstr ""
 
-#: ubuntu_l10n/app.py:461
+#: ubuntu_l10n/app.py:441
 msgid ""
 "This app shows translation progress for Ubuntu packages on Launchpad.\n"
 "\n"
@@ -145,89 +120,102 @@ msgid ""
 "Data is cached locally for 1 hour to reduce load on Launchpad servers."
 msgstr ""
 
-#: ubuntu_l10n/app.py:470
+#: ubuntu_l10n/app.py:450
 msgid "Get Started"
 msgstr ""
 
-#: ubuntu_l10n/app.py:524
+#: ubuntu_l10n/app.py:497
+msgid "Notifications enabled"
+msgstr ""
+
+#: ubuntu_l10n/app.py:498
+msgid "You will be notified about translation changes"
+msgstr ""
+
+#: ubuntu_l10n/app.py:515
 msgid "Export Data"
 msgstr ""
 
-#: ubuntu_l10n/app.py:525
+#: ubuntu_l10n/app.py:516
 msgid "Choose export format:"
 msgstr ""
 
-#: ubuntu_l10n/app.py:526
+#: ubuntu_l10n/app.py:517
 msgid "Cancel"
 msgstr ""
 
-#: ubuntu_l10n/app.py:595
+#: ubuntu_l10n/app.py:586
 #, python-brace-format
 msgid "<b>Overall:</b> {pct}% ({translated}/{total} strings)"
 msgstr ""
 
-#: ubuntu_l10n/app.py:599
+#: ubuntu_l10n/app.py:590
 #, python-brace-format
 msgid "<b>Packages:</b> {count} total, {fully} at 100%, {zero} at 0%"
 msgstr ""
 
-#: ubuntu_l10n/app.py:602
+#: ubuntu_l10n/app.py:593
 msgid "<b>Top 10 most translated:</b>"
 msgstr ""
 
-#: ubuntu_l10n/app.py:606
+#: ubuntu_l10n/app.py:597
 msgid "<b>Top 10 least translated:</b>"
 msgstr ""
 
-#: ubuntu_l10n/app.py:612
+#: ubuntu_l10n/app.py:603
 msgid "Language Statistics"
 msgstr ""
 
-#: ubuntu_l10n/app.py:616 ubuntu_l10n/app.py:643
+#: ubuntu_l10n/app.py:607 ubuntu_l10n/app.py:634
 msgid "Close"
 msgstr ""
 
-#: ubuntu_l10n/app.py:630
+#: ubuntu_l10n/app.py:621
 msgid ""
 "Ubuntu L10n uses Launchpad's public translation pages.\n"
 "No API key is required."
 msgstr ""
 
-#: ubuntu_l10n/app.py:638
+#: ubuntu_l10n/app.py:629
 msgid "Clear Cache"
 msgstr ""
 
-#: ubuntu_l10n/app.py:666
+#: ubuntu_l10n/app.py:657
 msgid "View Ubuntu translation statistics from Launchpad"
 msgstr ""
 
-#: ubuntu_l10n/app.py:687
+#: ubuntu_l10n/app.py:658
+msgid ""
+"Translate this app: https://www.transifex.com/danielnylander/ubuntu-l10n/"
+msgstr ""
+
+#: ubuntu_l10n/app.py:678
 #, python-brace-format
 msgid "Loading… {loaded}/{total} templates"
 msgstr ""
 
-#: ubuntu_l10n/app.py:725
+#: ubuntu_l10n/app.py:716
 msgid "Ubuntu L10n: Low translations"
 msgstr ""
 
-#: ubuntu_l10n/app.py:726
+#: ubuntu_l10n/app.py:717
 #, python-brace-format
 msgid "{count} packages below 50%: {names}"
 msgstr ""
 
-#: ubuntu_l10n/app.py:737
+#: ubuntu_l10n/app.py:728
 #, python-brace-format
 msgid "Error: {error}"
 msgstr ""
 
-#: ubuntu_l10n/app.py:770
+#: ubuntu_l10n/app.py:761
 #, python-brace-format
 msgid ""
 "{count} templates · {translated}/{total} strings ({pct}%) · {untranslated} "
 "untranslated · {fully} fully translated"
 msgstr ""
 
-#: ubuntu_l10n/app.py:783
+#: ubuntu_l10n/app.py:774
 #, python-brace-format
 msgid "Cached ({age} min ago)"
 msgstr ""
