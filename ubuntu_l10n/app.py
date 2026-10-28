@@ -886,8 +886,12 @@ class TranslationApp(Adw.Application):
     def _show_shortcuts_window(self, *_args):
         win = Gtk.ShortcutsWindow(transient_for=self.get_active_window(), modal=True)
         section = Gtk.ShortcutsSection(visible=True, max_height=10)
-        group = Gtk.ShortcutsGroup(visible=True, title="General")
-        for accel, title in [("<Control>q", "Quit"), ("F5", "Refresh"), ("<Control>slash", "Keyboard shortcuts")]:
+        group = Gtk.ShortcutsGroup(visible=True, title=_("General"))
+        for accel, title in [
+            ("<Control>q", _("Quit")),
+            ("F5", _("Refresh data")),
+            ("<Control>slash", _("Keyboard shortcuts")),
+        ]:
             s = Gtk.ShortcutsShortcut(visible=True, accelerator=accel, title=title)
             group.append(s)
         section.append(group)
