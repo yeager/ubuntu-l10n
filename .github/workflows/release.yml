@@ -38,33 +38,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          PROJECT_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          test "$VERSION" = "$PROJECT_VERSION"
-          PKG=$(mktemp -d)
-          trap 'rm -rf "$PKG"' EXIT
-          mkdir -p "$PKG/usr/lib/python3/dist-packages/ubuntu_l10n"
-          mkdir -p "$PKG/usr/bin" "$PKG/usr/share/applications" "$PKG/DEBIAN"
-
-          cp ubuntu_l10n/*.py "$PKG/usr/lib/python3/dist-packages/ubuntu_l10n/"
-
-          for mo in locale/*/LC_MESSAGES/ubuntu-l10n.mo; do
-            [ -f "$mo" ] || continue
-            lang=$(echo "$mo" | cut -d/ -f2)
-            mkdir -p "$PKG/usr/share/locale/$lang/LC_MESSAGES"
-            cp "$mo" "$PKG/usr/share/locale/$lang/LC_MESSAGES/"
-          done
-
-          cp se.danielnylander.ubuntu-l10n.desktop "$PKG/usr/share/applications/"
-
-          mkdir -p "$PKG/usr/share/icons/hicolor/scalable/apps"
-          cp data/icons/ubuntu-l10n.svg "$PKG/usr/share/icons/hicolor/scalable/apps/"
-
-          printf '#!/usr/bin/env python3\nfrom ubuntu_l10n.app import main\nmain()\n' > "$PKG/usr/bin/ubuntu-l10n"
-          chmod +x "$PKG/usr/bin/ubuntu-l10n"
-
-          printf 'Package: ubuntu-l10n\nVersion: %s-1\nSection: devel\nPriority: optional\nArchitecture: all\nDepends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1, python3-bs4, python3-requests, python3-lxml\nMaintainer: Daniel Nylander <daniel@danielnylander.se>\nHomepage: https://github.com/yeager/ubuntu-l10n\nDescription: Ubuntu/Launchpad translation statistics viewer\n' "$VERSION" > "$PKG/DEBIAN/control"
-
-          dpkg-deb --root-owner-group --build "$PKG" "ubuntu-l10n_${VERSION}-1_all.deb"
+          bash scripts/build-deb.sh build/release "$VERSION"
 
       - name: Create release and upload
         env:
@@ -72,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          gh release create "$GITHUB_REF_NAME" "ubuntu-l10n_${VERSION}-1_all.deb" \
+          gh release create "$GITHUB_REF_NAME" "build/release/ubuntu-l10n_${VERSION}-1_all.deb" \
             --title "v${VERSION}" \
             --notes "Release v${VERSION} with checked-in translations" \
             --repo yeager/ubuntu-l10n
