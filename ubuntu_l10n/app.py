@@ -27,7 +27,9 @@ from .scraper import (  # noqa: E402
     DISTRO_VERSIONS, LANGUAGES,
     load_config, save_config,
 )
-from .accessibility import AccessibilityManager  # noqa: E402
+from .accessibility import (  # noqa: E402
+    AccessibilityManager, associate_mnemonic, set_accessible_label,
+)
 from . import __version__  # noqa: E402
 
 # i18n setup
@@ -215,13 +217,17 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Refresh button
         refresh_btn = Gtk.Button(icon_name="view-refresh-symbolic")
-        refresh_btn.set_tooltip_text(_("Refresh data"))
+        refresh_label = _("Refresh data")
+        refresh_btn.set_tooltip_text(refresh_label)
+        set_accessible_label(refresh_btn, refresh_label)
         refresh_btn.connect("clicked", self._on_refresh)
         header.pack_start(refresh_btn)
 
         # Heatmap toggle
         self._heatmap_btn = Gtk.ToggleButton(icon_name="view-grid-symbolic")
-        self._heatmap_btn.set_tooltip_text(_("Toggle heatmap view"))
+        heatmap_label = _("Toggle heatmap view")
+        self._heatmap_btn.set_tooltip_text(heatmap_label)
+        set_accessible_label(self._heatmap_btn, heatmap_label)
         self._heatmap_btn.connect("toggled", self._on_heatmap_toggled)
         header.pack_start(self._heatmap_btn)
 
@@ -231,16 +237,20 @@ class MainWindow(Adw.ApplicationWindow):
         menu.append(_("Notifications"), "win.toggle-notifications")
         menu.append(_("About"), "win.about")
         menu_btn = Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu)
-        menu_btn.set_tooltip_text(_("Menu"))
+        menu_label = _("Menu")
+        menu_btn.set_tooltip_text(menu_label)
+        set_accessible_label(menu_btn, menu_label)
         header.pack_end(menu_btn)
 
         # Theme toggle
         self._theme_btn = Gtk.Button(icon_name="weather-clear-night-symbolic",
                                      tooltip_text=_("Toggle dark/light theme"))
+        set_accessible_label(self._theme_btn, _("Toggle dark/light theme"))
         self._theme_btn.connect("clicked", self._on_theme_toggle)
         # Export button
         export_btn = Gtk.Button(icon_name="document-save-symbolic",
                                 tooltip_text=_("Export data"))
+        set_accessible_label(export_btn, _("Export data"))
         export_btn.connect("clicked", self._on_export_clicked)
         header.pack_end(export_btn)
 
@@ -276,6 +286,7 @@ class MainWindow(Adw.ApplicationWindow):
         controls.set_margin_bottom(8)
 
         # Distribution selector
+        self._mnemonic_keys = set()
         distro_model = Gtk.StringList()
         distro_items = []
         for code, ver in DISTRO_VERSIONS.items():
@@ -291,6 +302,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         distro_label = Gtk.Label(label=_("Release:"))
         distro_label.add_css_class("dim-label")
+        associate_mnemonic(distro_label, distro_drop, self._mnemonic_keys)
         controls.append(distro_label)
         controls.append(distro_drop)
 
@@ -312,6 +324,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         lang_label = Gtk.Label(label=_("Language:"))
         lang_label.add_css_class("dim-label")
+        associate_mnemonic(lang_label, lang_drop, self._mnemonic_keys)
         controls.append(lang_label)
         controls.append(lang_drop)
 
@@ -333,18 +346,23 @@ class MainWindow(Adw.ApplicationWindow):
 
         sort_label = Gtk.Label(label=_("Sort:"))
         sort_label.add_css_class("dim-label")
+        associate_mnemonic(sort_label, sort_drop, self._mnemonic_keys)
         controls.append(sort_label)
         controls.append(sort_drop)
 
         # Statistics button
         stats_btn = Gtk.Button(icon_name="dialog-information-symbolic")
-        stats_btn.set_tooltip_text(_("Language statistics"))
+        stats_label = _("Language statistics")
+        stats_btn.set_tooltip_text(stats_label)
+        set_accessible_label(stats_btn, stats_label)
         stats_btn.connect("clicked", self._on_show_stats)
         controls.append(stats_btn)
 
         # Search
         search = Gtk.SearchEntry()
-        search.set_placeholder_text(_("Search packages…"))
+        search_label = _("Search packages…")
+        search.set_placeholder_text(search_label)
+        set_accessible_label(search, search_label)
         search.set_hexpand(True)
         search.connect("search-changed", self._on_search_changed)
         self._search = search

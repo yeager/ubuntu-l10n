@@ -1,11 +1,14 @@
 import unittest
+from unittest.mock import Mock
 
 try:
     import gi
     gi.require_version("Adw", "1")
     gi.require_version("Gtk", "4.0")
     from gi.repository import Adw, Gio, Gtk
-    from ubuntu_l10n.accessibility import AccessibilityManager
+    from ubuntu_l10n.accessibility import (
+        AccessibilityManager, associate_mnemonic, set_accessible_label,
+    )
 except (ImportError, ValueError):
     Adw = Gio = Gtk = AccessibilityManager = None
 
@@ -26,6 +29,31 @@ class AccessibilityManagerTests(unittest.TestCase):
 
     def tearDown(self):
         self.window.destroy()
+
+    def test_translated_control_labels_get_distinct_mnemonics(self):
+        for texts in (("Release:", "Language:", "Sort:"), ("Utgåva:", "Språk:", "Sortera:")):
+            with self.subTest(labels=texts):
+                used = set()
+                labels = [Gtk.Label(label=text) for text in texts]
+                controls = [Gtk.DropDown(), Gtk.DropDown(), Gtk.DropDown()]
+
+                keys = [
+                    associate_mnemonic(label, control, used)
+                    for label, control in zip(labels, controls)
+                ]
+
+                self.assertEqual(len(set(keys)), 3)
+                for label, control in zip(labels, controls):
+                    self.assertIs(label.get_mnemonic_widget(), control)
+
+    def test_icon_control_can_receive_accessible_name(self):
+        button = Mock()
+
+        set_accessible_label(button, "Refresh data")
+
+        button.update_property.assert_called_once_with(
+            [Gtk.AccessibleProperty.LABEL], ["Refresh data"],
+        )
 
     def test_registers_zoom_and_contrast_actions_with_shortcuts(self):
         self.assertIsNotNone(self.app.lookup_action("zoom-in"))

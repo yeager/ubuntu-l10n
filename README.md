@@ -44,6 +44,9 @@ Ubuntu L10n includes app-level text scaling and a stronger-contrast mode:
 These shortcuts affect the current app window. Use Ubuntu's Accessibility
 settings for system-wide changes.
 
+Icon-only toolbar buttons have screen-reader names. The Release, Language and
+Sort labels provide keyboard mnemonics that move focus to their selectors.
+
 ## Author
 
 Daniel Nylander — [danielnylander.se](https://danielnylander.se)
