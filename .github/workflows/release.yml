@@ -22,13 +22,13 @@ jobs:
 
       - name: Compile translations
         run: |
+          set -euo pipefail
           for po in po/*.po; do
             [ -f "$po" ] || continue
             lang=$(basename "$po" .po)
-            mkdir -p locale/$lang/LC_MESSAGES
-            msgfmt -o locale/$lang/LC_MESSAGES/ubuntu-l10n.mo "$po"
+            mkdir -p "locale/$lang/LC_MESSAGES"
+            msgfmt -o "locale/$lang/LC_MESSAGES/ubuntu-l10n.mo" "$po"
           done
-
 
       - name: Generate translated .desktop file
         run: |
@@ -36,43 +36,42 @@ jobs:
 
       - name: Build .deb
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          PROJECT_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          test "$VERSION" = "$PROJECT_VERSION"
           PKG=$(mktemp -d)
-          mkdir -p $PKG/usr/lib/python3/dist-packages/ubuntu_l10n
-          mkdir -p $PKG/usr/bin
-          mkdir -p $PKG/usr/share/applications
-          mkdir -p $PKG/DEBIAN
+          trap 'rm -rf "$PKG"' EXIT
+          mkdir -p "$PKG/usr/lib/python3/dist-packages/ubuntu_l10n"
+          mkdir -p "$PKG/usr/bin" "$PKG/usr/share/applications" "$PKG/DEBIAN"
 
-          cp ubuntu_l10n/*.py $PKG/usr/lib/python3/dist-packages/ubuntu_l10n/
+          cp ubuntu_l10n/*.py "$PKG/usr/lib/python3/dist-packages/ubuntu_l10n/"
 
           for mo in locale/*/LC_MESSAGES/ubuntu-l10n.mo; do
             [ -f "$mo" ] || continue
             lang=$(echo "$mo" | cut -d/ -f2)
-            mkdir -p $PKG/usr/share/locale/$lang/LC_MESSAGES
-            cp "$mo" $PKG/usr/share/locale/$lang/LC_MESSAGES/
+            mkdir -p "$PKG/usr/share/locale/$lang/LC_MESSAGES"
+            cp "$mo" "$PKG/usr/share/locale/$lang/LC_MESSAGES/"
           done
 
-          desktop=$(find data/ -name "*.desktop" 2>/dev/null | head -1)
-          [ -n "$desktop" ] && cp "$desktop" $PKG/usr/share/applications/
+          cp se.danielnylander.ubuntu-l10n.desktop "$PKG/usr/share/applications/"
 
-          icon=$(find data/icons/ -name "*.svg" 2>/dev/null | head -1)
-          if [ -n "$icon" ]; then
-            mkdir -p $PKG/usr/share/icons/hicolor/scalable/apps
-            cp "$icon" $PKG/usr/share/icons/hicolor/scalable/apps/
-          fi
+          mkdir -p "$PKG/usr/share/icons/hicolor/scalable/apps"
+          cp data/icons/ubuntu-l10n.svg "$PKG/usr/share/icons/hicolor/scalable/apps/"
 
-          printf '#!/usr/bin/env python3\nfrom ubuntu_l10n.app import main\nmain()\n' > $PKG/usr/bin/ubuntu-l10n
-          chmod +x $PKG/usr/bin/ubuntu-l10n
+          printf '#!/usr/bin/env python3\nfrom ubuntu_l10n.app import main\nmain()\n' > "$PKG/usr/bin/ubuntu-l10n"
+          chmod +x "$PKG/usr/bin/ubuntu-l10n"
 
-          printf 'Package: ubuntu-l10n\nVersion: %s-1\nSection: devel\nPriority: optional\nArchitecture: all\nDepends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1\nMaintainer: Daniel Nylander <daniel@danielnylander.se>\nHomepage: https://github.com/yeager/ubuntu-l10n\nDescription: Ubuntu/Launchpad translation statistics viewer\n' "$VERSION" > $PKG/DEBIAN/control
+          printf 'Package: ubuntu-l10n\nVersion: %s-1\nSection: devel\nPriority: optional\nArchitecture: all\nDepends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1, python3-bs4, python3-requests, python3-lxml\nMaintainer: Daniel Nylander <daniel@danielnylander.se>\nHomepage: https://github.com/yeager/ubuntu-l10n\nDescription: Ubuntu/Launchpad translation statistics viewer\n' "$VERSION" > "$PKG/DEBIAN/control"
 
-          dpkg-deb --root-owner-group --build $PKG ubuntu-l10n_${VERSION}-1_all.deb
+          dpkg-deb --root-owner-group --build "$PKG" "ubuntu-l10n_${VERSION}-1_all.deb"
 
       - name: Create release and upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
           gh release create "$GITHUB_REF_NAME" "ubuntu-l10n_${VERSION}-1_all.deb" \
             --title "v${VERSION}" \
             --notes "Release v${VERSION} with checked-in translations" \

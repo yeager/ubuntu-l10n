@@ -27,6 +27,7 @@ from .scraper import (  # noqa: E402
     DISTRO_VERSIONS, LANGUAGES,
     load_config, save_config,
 )
+from . import __version__  # noqa: E402
 
 # i18n setup
 LOCALEDIR = os.path.join(os.path.dirname(__file__), '..', 'po', 'locale')
@@ -36,7 +37,7 @@ gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
-VERSION = "0.3.4"
+VERSION = __version__
 
 
 def _setup_heatmap_css():
