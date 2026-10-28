@@ -41,6 +41,17 @@ gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
 VERSION = __version__
+SHORTCUTS = (
+    ("<Control>q", _("Quit")),
+    ("F5", _("Refresh data")),
+    ("<Control>slash", _("Keyboard shortcuts")),
+    ("<Control>f", _("Search packages…")),
+    ("<Control>plus", _("Increase text size")),
+    ("<Control>equal", _("Increase text size")),
+    ("<Control>minus", _("Decrease text size")),
+    ("<Control>0", _("Reset text size")),
+    ("<Control><Shift>h", _("Toggle high-contrast styling")),
+)
 
 
 def _setup_heatmap_css():
@@ -887,11 +898,7 @@ class TranslationApp(Adw.Application):
         win = Gtk.ShortcutsWindow(transient_for=self.get_active_window(), modal=True)
         section = Gtk.ShortcutsSection(visible=True, max_height=10)
         group = Gtk.ShortcutsGroup(visible=True, title=_("General"))
-        for accel, title in [
-            ("<Control>q", _("Quit")),
-            ("F5", _("Refresh data")),
-            ("<Control>slash", _("Keyboard shortcuts")),
-        ]:
+        for accel, title in SHORTCUTS:
             s = Gtk.ShortcutsShortcut(visible=True, accelerator=accel, title=title)
             group.append(s)
         section.append(group)

@@ -13,9 +13,9 @@ if Adw is not None:
     from ubuntu_l10n.accessibility import (
         AccessibilityManager, associate_mnemonic, set_accessible_label,
     )
-    from ubuntu_l10n.app import MainWindow
+    from ubuntu_l10n.app import MainWindow, SHORTCUTS
 else:
-    AccessibilityManager = MainWindow = None
+    AccessibilityManager = MainWindow = SHORTCUTS = None
 
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
@@ -81,6 +81,16 @@ class AccessibilityManagerTests(unittest.TestCase):
 
         self.assertFalse(handled)
         window._search.grab_focus.assert_not_called()
+
+    def test_shortcut_help_lists_search_zoom_and_contrast_controls(self):
+        shortcuts = dict(SHORTCUTS)
+
+        self.assertEqual(shortcuts["<Control>f"], "Search packages…")
+        self.assertEqual(shortcuts["<Control>plus"], "Increase text size")
+        self.assertEqual(shortcuts["<Control>equal"], "Increase text size")
+        self.assertEqual(shortcuts["<Control>minus"], "Decrease text size")
+        self.assertEqual(shortcuts["<Control>0"], "Reset text size")
+        self.assertEqual(shortcuts["<Control><Shift>h"], "Toggle high-contrast styling")
 
     def test_registers_zoom_and_contrast_actions_with_shortcuts(self):
         self.assertIsNotNone(self.app.lookup_action("zoom-in"))
