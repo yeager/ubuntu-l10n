@@ -5,12 +5,17 @@ try:
     import gi
     gi.require_version("Adw", "1")
     gi.require_version("Gtk", "4.0")
-    from gi.repository import Adw, Gio, Gtk
+    from gi.repository import Adw, Gdk, Gio, Gtk
+except (ImportError, ValueError):
+    Adw = Gdk = Gio = Gtk = None
+
+if Adw is not None:
     from ubuntu_l10n.accessibility import (
         AccessibilityManager, associate_mnemonic, set_accessible_label,
     )
-except (ImportError, ValueError):
-    Adw = Gio = Gtk = AccessibilityManager = None
+    from ubuntu_l10n.app import MainWindow
+else:
+    AccessibilityManager = MainWindow = None
 
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
@@ -54,6 +59,28 @@ class AccessibilityManagerTests(unittest.TestCase):
         button.update_property.assert_called_once_with(
             [Gtk.AccessibleProperty.LABEL], ["Refresh data"],
         )
+
+    def test_control_f_focuses_package_search(self):
+        window = Mock()
+        window._search = Mock()
+
+        handled = MainWindow._on_key_pressed(
+            window, Mock(), Gdk.KEY_f, 0, Gdk.ModifierType.CONTROL_MASK,
+        )
+
+        self.assertTrue(handled)
+        window._search.grab_focus.assert_called_once_with()
+
+    def test_unrelated_key_is_not_consumed_by_search_shortcut(self):
+        window = Mock()
+        window._search = Mock()
+
+        handled = MainWindow._on_key_pressed(
+            window, Mock(), Gdk.KEY_a, 0, Gdk.ModifierType.CONTROL_MASK,
+        )
+
+        self.assertFalse(handled)
+        window._search.grab_focus.assert_not_called()
 
     def test_registers_zoom_and_contrast_actions_with_shortcuts(self):
         self.assertIsNotNone(self.app.lookup_action("zoom-in"))

@@ -15,7 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Install GTK test dependencies
-        run: sudo apt-get update && sudo apt-get install -y python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-gi python3-requests python3-bs4 python3-lxml \
+            gir1.2-gtk-4.0 gir1.2-adw-1 xvfb
       - name: Test accessibility controls
         run: xvfb-run -a /usr/bin/python3 -m unittest discover -s tests -p 'test_accessibility.py' -v
 

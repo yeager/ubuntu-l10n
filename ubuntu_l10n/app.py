@@ -368,6 +368,11 @@ class MainWindow(Adw.ApplicationWindow):
         self._search = search
         controls.append(search)
 
+        key_controller = Gtk.EventControllerKey()
+        key_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        key_controller.connect("key-pressed", self._on_key_pressed)
+        self.add_controller(key_controller)
+
         content.append(controls)
 
         # Summary bar
@@ -582,6 +587,12 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_search_changed(self, entry):
         self._filter_and_display()
+
+    def _on_key_pressed(self, _controller, keyval, _keycode, state):
+        if keyval == Gdk.KEY_f and state & Gdk.ModifierType.CONTROL_MASK:
+            self._search.grab_focus()
+            return True
+        return False
 
     def _on_sort_changed(self, _drop, _pspec):
         self._filter_and_display()
