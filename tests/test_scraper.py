@@ -86,5 +86,36 @@ class RequestRetryTests(unittest.TestCase):
         session.get.assert_called_once()
 
 
+class LaunchpadPaginationTests(unittest.TestCase):
+    def test_total_count_accepts_grouped_digits(self):
+        html = '<table><tr><td class="batch-navigation-index">1 to 300 of 1,234 results</td></tr></table>'
+        self.assertEqual(scraper.get_total_count(html), 1234)
+
+    def test_fetches_every_page_when_total_uses_thousands_separator(self):
+        first_page = '<table><tr><td class="batch-navigation-index">1 to 300 of 1,234 results</td></tr></table>'
+        session = Mock()
+        session.headers = {}
+        package = scraper.PackageStats(
+            name="example", translated_pct=100.0, untranslated=0,
+            need_review=0, changed=0, total=1, last_edited="",
+            last_editor="", translate_url="https://translations.launchpad.net/example",
+        )
+        responses = [Mock(text=first_page)] + [Mock(text="<html></html>") for _ in range(4)]
+        expected_urls = [scraper.get_lang_url("noble", "sv", 300, start) for start in (0, 300, 600, 900, 1200)]
+
+        with (
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(scraper, "_request_with_retry", side_effect=responses) as request,
+            patch.object(scraper, "parse_page", side_effect=[[package]] + [[] for _ in range(4)]),
+            patch.object(scraper, "save_cache") as save_cache,
+            patch.object(scraper.time, "sleep"),
+        ):
+            result = scraper.fetch_all_packages("noble", "sv", force=True)
+
+        self.assertEqual(result, [package])
+        self.assertEqual([call.args[1] for call in request.call_args_list], expected_urls)
+        save_cache.assert_called_once_with("noble", "sv", [scraper._packages_to_dicts([package])[0]])
+
+
 if __name__ == "__main__":
     unittest.main()

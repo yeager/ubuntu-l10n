@@ -282,10 +282,11 @@ def get_total_count(html: str) -> int:
     soup = BeautifulSoup(html, "lxml")
     nav = soup.find("td", class_="batch-navigation-index")
     if nav:
-        text = nav.get_text()
-        m = re.search(r"of\s+(\d+)", text)
+        text = nav.get_text(" ", strip=True)
+        m = re.search(r"\bof\s+([\d][\d,.\s]*)", text, re.IGNORECASE)
         if m:
-            return int(m.group(1))
+            count = re.sub(r"[,.\s]", "", m.group(1))
+            return int(count)
     return 0
 
 
