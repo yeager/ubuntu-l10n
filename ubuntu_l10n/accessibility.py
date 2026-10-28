@@ -40,10 +40,28 @@ class AccessibilityManager:
         if self._high_contrast:
             css += """
             window.high-contrast {
-                border: 2px solid @accent_color;
+                background-color: #000000;
+                color: #ffffff;
+                border: 2px solid #ffffff;
                 font-weight: bold;
             }"""
-        self._css.load_from_string(css.encode())
+            css += """
+            window.high-contrast label,
+            window.high-contrast .dim-label {
+                color: #ffffff;
+            }
+            window.high-contrast button,
+            window.high-contrast entry,
+            window.high-contrast dropdown {
+                background-color: #000000;
+                color: #ffffff;
+                border: 2px solid #ffffff;
+            }
+            window.high-contrast :focus {
+                border: 3px solid #ffff00;
+            }
+            """
+        self._css.load_from_string(css)
 
     def _zoom_in(self):
         self._font_scale = min(self._font_scale + 0.1, 3.0)

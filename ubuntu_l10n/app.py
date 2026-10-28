@@ -27,6 +27,7 @@ from .scraper import (  # noqa: E402
     DISTRO_VERSIONS, LANGUAGES,
     load_config, save_config,
 )
+from .accessibility import AccessibilityManager  # noqa: E402
 from . import __version__  # noqa: E402
 
 # i18n setup
@@ -425,6 +426,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Apply CSS
         self._apply_css()
         _setup_heatmap_css()
+        self._accessibility_manager = AccessibilityManager(self)
 
         # Show welcome dialog on first run, then load data
         config = load_config()

@@ -32,6 +32,18 @@ sudo dnf install ubuntu-l10n
 
 GPL-3.0
 
+## Accessibility shortcuts
+
+Ubuntu L10n includes app-level text scaling and a stronger-contrast mode:
+
+- `Ctrl` + `+` or `Ctrl` + `=` to enlarge text.
+- `Ctrl` + `-` to reduce text.
+- `Ctrl` + `0` to restore the default text size.
+- `Ctrl` + `Shift` + `H` to toggle the high-contrast styling.
+
+These shortcuts affect the current app window. Use Ubuntu's Accessibility
+settings for system-wide changes.
+
 ## Author
 
 Daniel Nylander — [danielnylander.se](https://danielnylander.se)
