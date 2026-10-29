@@ -41,6 +41,18 @@ class JsonStorageTests(unittest.TestCase):
             scraper.save_cache("noble", "sv", [])
             self.assertEqual(json.loads(self.cache_file.read_text(encoding="utf-8"))["noble_sv"]["data"], [])
 
+    def test_cache_rejects_invalid_timestamps(self):
+        invalid_timestamps = ("bad", True, float("nan"), float("inf"), -1)
+        self.cache_file.parent.mkdir(parents=True, exist_ok=True)
+        with patch.object(scraper, "CACHE_FILE", self.cache_file):
+            for timestamp in invalid_timestamps:
+                with self.subTest(timestamp=timestamp):
+                    self.cache_file.write_text(
+                        json.dumps({"noble_sv": {"data": [], "timestamp": timestamp}}),
+                        encoding="utf-8",
+                    )
+                    self.assertEqual(scraper.load_cache("noble", "sv"), (None, None))
+
     def test_concurrent_cache_updates_preserve_both_entries(self):
         first_write_started = threading.Event()
         release_first_write = threading.Event()
@@ -145,6 +157,51 @@ class RequestRetryTests(unittest.TestCase):
 
 
 class LaunchpadPaginationTests(unittest.TestCase):
+    def _cached_package(self):
+        package = scraper.PackageStats(
+            name="example", translated_pct=75.0, untranslated=25,
+            need_review=0, changed=0, total=100, last_edited="",
+            last_editor="", translate_url="https://translations.launchpad.net/example",
+        )
+        return package, scraper._packages_to_dicts([package])
+
+    def test_future_cache_timestamp_is_shown_as_unknown_and_refreshed(self):
+        package, cached_data = self._cached_package()
+        session = Mock()
+        session.headers = {}
+        cache_callback = Mock()
+
+        with (
+            patch.object(scraper, "load_cache", return_value=(cached_data, 1200.0)),
+            patch.object(scraper.time, "time", return_value=1000.0),
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(scraper, "_request_with_retry", side_effect=requests.ConnectionError("offline")),
+        ):
+            with self.assertRaises(requests.ConnectionError):
+                scraper.fetch_all_packages("noble", "sv", cache_cb=cache_callback)
+
+        cache_callback.assert_called_once_with([package], None)
+
+    def test_malformed_cached_package_is_ignored_and_refetched(self):
+        session = Mock()
+        session.headers = {}
+        response = Mock(text="<html></html>")
+        cache_callback = Mock()
+
+        with (
+            patch.object(scraper, "load_cache", return_value=([{"name": "broken"}], 1000.0)),
+            patch.object(scraper.time, "time", return_value=1000.0),
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(scraper, "_request_with_retry", return_value=response) as request,
+            patch.object(scraper, "save_cache") as save_cache,
+        ):
+            result = scraper.fetch_all_packages("noble", "sv", cache_cb=cache_callback)
+
+        self.assertEqual(result, [])
+        cache_callback.assert_not_called()
+        request.assert_called_once()
+        save_cache.assert_called_once_with("noble", "sv", [])
+
     def test_emits_stale_cache_before_reporting_network_failure(self):
         cached_data = [{
             "name": "ubuntu-example",

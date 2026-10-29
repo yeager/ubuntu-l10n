@@ -732,7 +732,7 @@ class MainWindow(Adw.ApplicationWindow):
             )
 
         def cache_cb(packages, age_minutes):
-            cache_state["fresh"] = age_minutes < 60
+            cache_state["fresh"] = age_minutes is not None and age_minutes < 60
             GLib.idle_add(
                 self._on_data_loaded, packages, True, age_minutes,
                 generation, data_key,
@@ -773,7 +773,7 @@ class MainWindow(Adw.ApplicationWindow):
             self._filter_and_display()
 
     def _on_data_loaded(self, packages: list[PackageStats],
-                        from_cache: bool = False, age_minutes: int = 0,
+                        from_cache: bool = False, age_minutes: int | None = 0,
                         generation: int | None = None,
                         data_key: tuple[str, str] | None = None):
         if generation is not None and generation != self._load_generation:
@@ -878,7 +878,7 @@ class MainWindow(Adw.ApplicationWindow):
             )
             if self._from_cache:
                 summary += " · " + _("Cached ({age} min ago)").format(
-                    age=self._cache_age)
+                    age="?" if self._cache_age is None else self._cache_age)
             self._summary.set_text(summary)
             self._overall_progress.set_fraction(overall_pct / 100.0)
             self._overall_progress.set_text(f"{overall_pct:.1f}%")

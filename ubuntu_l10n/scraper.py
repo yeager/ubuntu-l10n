@@ -1,6 +1,7 @@
 """Scrape translation statistics from Launchpad with caching and rate limiting."""
 
 import json
+import math
 import os
 import re
 import tempfile
@@ -141,8 +142,13 @@ def load_cache(distro: str, lang: str) -> tuple[list | None, float | None]:
             entry = cache[key]
             if isinstance(entry, dict) and isinstance(entry.get("data"), list):
                 timestamp = entry.get("timestamp")
-                if isinstance(timestamp, (int, float)):
-                    return entry["data"], float(timestamp)
+                if isinstance(timestamp, (int, float)) and not isinstance(timestamp, bool):
+                    try:
+                        timestamp = float(timestamp)
+                    except (OverflowError, ValueError):
+                        timestamp = None
+                    if timestamp is not None and math.isfinite(timestamp) and timestamp >= 0:
+                        return entry["data"], timestamp
     except (OSError, json.JSONDecodeError, TypeError, AttributeError):
         pass
     return None, None
@@ -297,7 +303,37 @@ def _packages_to_dicts(packages: list[PackageStats]) -> list[dict]:
 
 
 def _dicts_to_packages(dicts: list[dict]) -> list[PackageStats]:
-    return [PackageStats(**d) for d in dicts]
+    if not isinstance(dicts, list):
+        raise ValueError("Cached package data must be a list")
+    required = set(PackageStats.__dataclass_fields__)
+    string_fields = ("name", "last_edited", "last_editor", "translate_url")
+    integer_fields = ("untranslated", "need_review", "changed", "total")
+    packages = []
+    for item in dicts:
+        if not isinstance(item, dict) or set(item) != required:
+            raise ValueError("Cached package entry has an unexpected structure")
+        if any(not isinstance(item[field], str) for field in string_fields):
+            raise ValueError("Cached package text fields must be strings")
+        percentage = item["translated_pct"]
+        if isinstance(percentage, bool) or not isinstance(percentage, (int, float)):
+            raise ValueError("Cached translation percentage is invalid")
+        try:
+            percentage = float(percentage)
+        except (OverflowError, ValueError):
+            raise ValueError("Cached translation percentage is invalid") from None
+        if not math.isfinite(percentage) or not 0 <= percentage <= 100:
+            raise ValueError("Cached translation percentage is invalid")
+        if any(
+            isinstance(item[field], bool)
+            or not isinstance(item[field], int)
+            or item[field] < 0
+            for field in integer_fields
+        ):
+            raise ValueError("Cached package counts must be non-negative integers")
+        if item["untranslated"] > item["total"]:
+            raise ValueError("Cached untranslated count exceeds its total")
+        packages.append(PackageStats(**item))
+    return packages
 
 
 def fetch_all_packages(distro: str, lang: str, callback=None,
@@ -313,13 +349,18 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
     if not force:
         cached_data, cached_ts = load_cache(distro, lang)
         if cached_data is not None and cached_ts is not None:
-            age_seconds = max(0, time.time() - cached_ts)
-            age_minutes = int(age_seconds / 60)
-            packages = _dicts_to_packages(cached_data)
-            if cache_cb:
-                cache_cb(packages, age_minutes)
-            if age_seconds < 3600:  # < 1 hour
-                return packages
+            try:
+                packages = _dicts_to_packages(cached_data)
+            except (TypeError, ValueError):
+                packages = None
+            if packages is not None:
+                age_seconds = time.time() - cached_ts
+                age_minutes = int(age_seconds / 60) if age_seconds >= 0 else None
+                cache_is_fresh = age_seconds >= 0 and age_seconds < 3600
+                if cache_cb:
+                    cache_cb(packages, age_minutes)
+                if cache_is_fresh:
+                    return packages
 
     session = requests.Session()
     from . import __version__
