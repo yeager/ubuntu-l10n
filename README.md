@@ -16,6 +16,9 @@ sudo apt install python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 pipx
 pipx install --system-site-packages ubuntu-l10n
 ```
 
+The PyPI wheel includes the compiled gettext catalogs, including Swedish, so
+the installed app follows the desktop language when available.
+
 
 
 ### Debian/Ubuntu

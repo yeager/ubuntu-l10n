@@ -5,10 +5,11 @@ from datetime import datetime as _dt_now
 import gettext
 import json
 import locale
-import os
+import platform as _platform
 import sys
 import threading
 import webbrowser
+from pathlib import Path as _Path
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -33,9 +34,14 @@ from .accessibility import (  # noqa: E402
 from . import __version__  # noqa: E402
 
 # i18n setup
-LOCALEDIR = os.path.join(os.path.dirname(__file__), '..', 'po', 'locale')
-if not os.path.isdir(LOCALEDIR):
-    LOCALEDIR = '/usr/share/locale'
+_PACKAGE_LOCALEDIR = _Path(__file__).resolve().parent / "locale"
+_SOURCE_LOCALEDIR = _Path(__file__).resolve().parent.parent / "locale"
+if _PACKAGE_LOCALEDIR.is_dir():
+    LOCALEDIR = str(_PACKAGE_LOCALEDIR)
+elif _SOURCE_LOCALEDIR.is_dir():
+    LOCALEDIR = str(_SOURCE_LOCALEDIR)
+else:
+    LOCALEDIR = "/usr/share/locale"
 gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
@@ -95,10 +101,6 @@ def get_system_language() -> str:
 
 
 
-import json as _json
-import platform as _platform
-from pathlib import Path as _Path
-
 _NOTIFY_APP = "ubuntu-l10n"
 
 
@@ -108,7 +110,7 @@ def _notify_config_path():
 
 def _load_notify_config():
     try:
-        return _json.loads(_notify_config_path().read_text())
+        return json.loads(_notify_config_path().read_text())
     except Exception:
         return {"enabled": True}
 
@@ -116,7 +118,7 @@ def _load_notify_config():
 def _save_notify_config(config):
     p = _notify_config_path()
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(_json.dumps(config))
+    p.write_text(json.dumps(config))
 
 
 def _send_notification(summary, body="", icon="dialog-information"):
@@ -547,7 +549,9 @@ class MainWindow(Adw.ApplicationWindow):
             self._theme_btn.set_icon_name("weather-clear-symbolic")
 
     def _update_last_updated(self):
-        self._last_update_label.set_text("Last updated: " + _dt_now.now().strftime("%Y-%m-%d %H:%M"))
+        self._last_update_label.set_text(
+            _("Last updated") + ": " + _dt_now.now().strftime("%Y-%m-%d %H:%M")
+        )
 
     def _on_export_clicked(self, *_args):
         dialog = Adw.MessageDialog(transient_for=self,

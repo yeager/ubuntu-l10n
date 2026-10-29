@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 try:
     import gi
@@ -14,8 +14,9 @@ if Adw is not None:
         AccessibilityManager, associate_mnemonic, set_accessible_label,
     )
     from ubuntu_l10n.app import MainWindow, SHORTCUTS
+    from ubuntu_l10n import app as app_module
 else:
-    AccessibilityManager = MainWindow = SHORTCUTS = None
+    AccessibilityManager = MainWindow = SHORTCUTS = app_module = None
 
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
@@ -134,6 +135,19 @@ class AccessibilityManagerTests(unittest.TestCase):
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
 class DataLoadStateTests(unittest.TestCase):
+    def test_last_updated_uses_the_translated_label(self):
+        window = Mock()
+        with (
+            patch.object(app_module, "_", return_value="Senast uppdaterad"),
+            patch.object(app_module, "_dt_now") as clock,
+        ):
+            clock.now.return_value.strftime.return_value = "2026-10-29 12:30"
+            MainWindow._update_last_updated(window)
+
+        window._last_update_label.set_text.assert_called_once_with(
+            "Senast uppdaterad: 2026-10-29 12:30",
+        )
+
     def test_ignores_errors_from_an_outdated_selection(self):
         window = Mock()
         window._load_generation = 3

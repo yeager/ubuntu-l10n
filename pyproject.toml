@@ -27,3 +27,6 @@ Repository = "https://github.com/yeager/ubuntu-l10n"
 
 [tool.setuptools.packages.find]
 include = ["ubuntu_l10n*"]
+
+[tool.setuptools.package-data]
+ubuntu_l10n = ["locale/*/LC_MESSAGES/*.mo"]

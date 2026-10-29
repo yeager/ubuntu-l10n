@@ -21,14 +21,7 @@ jobs:
         run: sudo apt-get install -y gettext
 
       - name: Compile translations
-        run: |
-          set -euo pipefail
-          for po in po/*.po; do
-            [ -f "$po" ] || continue
-            lang=$(basename "$po" .po)
-            mkdir -p "locale/$lang/LC_MESSAGES"
-            msgfmt -o "locale/$lang/LC_MESSAGES/ubuntu-l10n.mo" "$po"
-          done
+        run: python3 scripts/compile-translations.py
 
       - name: Generate translated .desktop file
         run: |

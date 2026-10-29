@@ -51,14 +51,7 @@ jobs:
       - name: Install Debian packaging tools
         run: sudo apt-get update && sudo apt-get install -y gettext dpkg-dev
       - name: Compile translations
-        run: |
-          set -euo pipefail
-          for po in po/*.po; do
-            [ -f "$po" ] || continue
-            lang=$(basename "$po" .po)
-            mkdir -p "locale/$lang/LC_MESSAGES"
-            msgfmt --check --check-format -o "locale/$lang/LC_MESSAGES/ubuntu-l10n.mo" "$po"
-          done
+        run: python3 scripts/compile-translations.py
       - name: Generate translated desktop entry
         run: python3 desktop-merge.py se.danielnylander.ubuntu-l10n.desktop.in po/ se.danielnylander.ubuntu-l10n.desktop
       - name: Build and inspect Debian package
