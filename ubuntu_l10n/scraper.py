@@ -411,6 +411,12 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
         if callback:
             callback(len(all_packages), total)
 
+    if len(all_packages) != total:
+        raise LaunchpadResponseError(
+            f"Launchpad reported {total} translation templates but only "
+            f"{len(all_packages)} were loaded",
+        )
+
     # Save to cache
     save_cache(distro, lang, _packages_to_dicts(all_packages))
 

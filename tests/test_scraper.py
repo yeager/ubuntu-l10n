@@ -269,6 +269,38 @@ class LaunchpadPaginationTests(unittest.TestCase):
 
         save_cache.assert_not_called()
 
+    def test_partial_pagination_is_not_saved_as_complete_results(self):
+        package, cached_data = self._cached_package()
+        first_page = (
+            '<table class="translation-stats"></table>'
+            '<td class="batch-navigation-index">1 to 300 of 600 results</td>'
+        )
+        later_page = '<table class="translation-stats"></table>'
+        session = Mock()
+        session.headers = {}
+        cache_callback = Mock()
+
+        with (
+            patch.object(scraper, "load_cache", return_value=(cached_data, 1200.0)),
+            patch.object(scraper.time, "time", return_value=8400.0),
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(
+                scraper, "_request_with_retry",
+                side_effect=[Mock(text=first_page), Mock(text=later_page)],
+            ),
+            patch.object(
+                scraper, "parse_page",
+                side_effect=[[package] * 300, [package] * 299],
+            ),
+            patch.object(scraper, "save_cache") as save_cache,
+            patch.object(scraper.time, "sleep"),
+        ):
+            with self.assertRaises(scraper.LaunchpadResponseError):
+                scraper.fetch_all_packages("noble", "sv", cache_cb=cache_callback)
+
+        cache_callback.assert_called_once_with([package], 120)
+        save_cache.assert_not_called()
+
     def test_fetches_every_page_when_total_uses_thousands_separator(self):
         first_page = (
             '<table class="translation-stats"></table>'
@@ -283,20 +315,21 @@ class LaunchpadPaginationTests(unittest.TestCase):
         )
         later_page = '<table class="translation-stats"></table>'
         responses = [Mock(text=first_page)] + [Mock(text=later_page) for _ in range(4)]
+        parsed_pages = [[package] * page_size for page_size in (300, 300, 300, 300, 34)]
         expected_urls = [scraper.get_lang_url("noble", "sv", 300, start) for start in (0, 300, 600, 900, 1200)]
 
         with (
             patch.object(scraper.requests, "Session", return_value=session),
             patch.object(scraper, "_request_with_retry", side_effect=responses) as request,
-            patch.object(scraper, "parse_page", side_effect=[[package] for _ in range(5)]),
+            patch.object(scraper, "parse_page", side_effect=parsed_pages),
             patch.object(scraper, "save_cache") as save_cache,
             patch.object(scraper.time, "sleep"),
         ):
             result = scraper.fetch_all_packages("noble", "sv", force=True)
 
-        self.assertEqual(result, [package] * 5)
+        self.assertEqual(len(result), 1234)
         self.assertEqual([call.args[1] for call in request.call_args_list], expected_urls)
-        save_cache.assert_called_once_with("noble", "sv", scraper._packages_to_dicts([package] * 5))
+        save_cache.assert_called_once_with("noble", "sv", scraper._packages_to_dicts(result))
 
 
 class LaunchpadPackageParsingTests(unittest.TestCase):
