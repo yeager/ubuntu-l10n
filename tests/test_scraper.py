@@ -261,5 +261,25 @@ class LaunchpadPaginationTests(unittest.TestCase):
         save_cache.assert_called_once_with("noble", "sv", [scraper._packages_to_dicts([package])[0]])
 
 
+class LaunchpadPackageParsingTests(unittest.TestCase):
+    def test_parse_page_accepts_grouped_package_counts(self):
+        html = """<table class="translation-stats"><tr id="ubuntu-example">
+          <td><a href="/ubuntu/noble/+source/example">example</a></td>
+          <td><span class="sortkey">50</span>50%</td>
+          <td><span class="sortkey">1,234</span>1,234</td>
+          <td><span class="sortkey">2 345</span>2 345</td>
+          <td><span class="sortkey">3</span>3</td>
+          <td>1,234</td><td><time>today</time></td><td><a>Translator</a></td>
+        </tr></table>"""
+
+        [package] = scraper.parse_page(html, "noble")
+
+        self.assertEqual(package.untranslated, 1234)
+        self.assertEqual(package.need_review, 2345)
+        self.assertEqual(package.changed, 3)
+        self.assertEqual(package.total, 1234)
+        self.assertEqual(package.translated, 0)
+
+
 if __name__ == "__main__":
     unittest.main()

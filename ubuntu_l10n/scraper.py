@@ -247,7 +247,9 @@ def parse_page(html: str, distro: str) -> list[PackageStats]:
             sk = cell.find("span", class_="sortkey")
             if sk:
                 try:
-                    return int(sk.get_text(strip=True))
+                    # Launchpad may group large counts with commas or spaces.
+                    digits = re.sub(r"\D", "", sk.get_text(strip=True))
+                    return int(digits) if digits else 0
                 except ValueError:
                     return 0
             return 0
@@ -258,7 +260,9 @@ def parse_page(html: str, distro: str) -> list[PackageStats]:
 
         # Total
         try:
-            total = int(cells[5].get_text(strip=True))
+            # Keep totals consistent with the grouped sort-key counts above.
+            digits = re.sub(r"\D", "", cells[5].get_text("", strip=True))
+            total = int(digits) if digits else 0
         except (ValueError, IndexError):
             total = 0
 
