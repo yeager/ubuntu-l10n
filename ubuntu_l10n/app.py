@@ -26,7 +26,7 @@ from gi.repository import Gtk, Adw, GLib, Gio, Pango, Gdk  # noqa: E402
 from .package_filter import filter_and_sort_packages  # noqa: E402
 from .scraper import (  # noqa: E402
     fetch_all_packages, PackageStats,
-    DISTRO_VERSIONS, EOL_DISTROS, LANGUAGES,
+    DISTRO_VERSIONS, EOL_DISTROS, ESM_DISTROS, LANGUAGES,
     load_config, save_config,
 )
 from .accessibility import (  # noqa: E402
@@ -52,6 +52,10 @@ def format_distro_label(code: str, version: str) -> str:
     label = f"{code.capitalize()} ({version})"
     if code in EOL_DISTROS:
         return _("{release} — no longer supported").format(release=label)
+    if code in ESM_DISTROS:
+        return _("{release} — standard support ended; ESM via Ubuntu Pro").format(
+            release=label,
+        )
     return label
 
 VERSION = __version__

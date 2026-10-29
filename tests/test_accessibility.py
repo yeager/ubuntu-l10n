@@ -15,10 +15,10 @@ if Adw is not None:
     )
     from ubuntu_l10n.app import MainWindow, SHORTCUTS
     from ubuntu_l10n import app as app_module
-    from ubuntu_l10n.scraper import DISTRO_VERSIONS, EOL_DISTROS
+    from ubuntu_l10n.scraper import DISTRO_VERSIONS, EOL_DISTROS, ESM_DISTROS
 else:
     AccessibilityManager = MainWindow = SHORTCUTS = app_module = None
-    DISTRO_VERSIONS = EOL_DISTROS = None
+    DISTRO_VERSIONS = EOL_DISTROS = ESM_DISTROS = None
 
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
@@ -99,6 +99,7 @@ class AccessibilityManagerTests(unittest.TestCase):
         self.assertEqual(DISTRO_VERSIONS["stonking"], "26.10")
         self.assertEqual(DISTRO_VERSIONS["jammy"], "22.04 LTS")
         self.assertEqual(EOL_DISTROS, {"questing", "plucky", "oracular"})
+        self.assertEqual(ESM_DISTROS, {"focal"})
         with patch.object(app_module, "_", side_effect=lambda message: message):
             self.assertEqual(
                 app_module.format_distro_label("questing", "25.10"),
@@ -107,6 +108,10 @@ class AccessibilityManagerTests(unittest.TestCase):
             self.assertEqual(
                 app_module.format_distro_label("resolute", "26.04 LTS"),
                 "Resolute (26.04 LTS)",
+            )
+            self.assertEqual(
+                app_module.format_distro_label("focal", "20.04 LTS"),
+                "Focal (20.04 LTS) — standard support ended; ESM via Ubuntu Pro",
             )
 
     def test_registers_zoom_and_contrast_actions_with_shortcuts(self):

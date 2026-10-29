@@ -240,3 +240,8 @@ msgstr "Cachad ({age} min sedan)"
 #, python-brace-format
 msgid "{release} — no longer supported"
 msgstr "{release} — supporten har upphört"
+
+#: ubuntu_l10n/app.py:56
+#, python-brace-format
+msgid "{release} — standard support ended; ESM via Ubuntu Pro"
+msgstr "{release} — ordinarie support har upphört; ESM via Ubuntu Pro"

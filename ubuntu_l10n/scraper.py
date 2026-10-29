@@ -58,6 +58,7 @@ DISTRO_VERSIONS = {
     "focal": "20.04 LTS",
 }
 EOL_DISTROS = frozenset({"questing", "plucky", "oracular"})
+ESM_DISTROS = frozenset({"focal"})
 
 # Language codes for common Ubuntu languages
 LANGUAGES = {
