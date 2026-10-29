@@ -7,8 +7,11 @@ name = "ubuntu-l10n"
 version = "0.3.8"
 description = "Ubuntu/Launchpad translation statistics viewer"
 readme = "README.md"
-license = "GPL-3.0-or-later"
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+]
 authors = [
     { name = "Daniel Nylander", email = "daniel@danielnylander.se" },
 ]
