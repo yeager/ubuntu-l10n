@@ -15,8 +15,10 @@ if Adw is not None:
     )
     from ubuntu_l10n.app import MainWindow, SHORTCUTS
     from ubuntu_l10n import app as app_module
+    from ubuntu_l10n.scraper import DISTRO_VERSIONS, EOL_DISTROS
 else:
     AccessibilityManager = MainWindow = SHORTCUTS = app_module = None
+    DISTRO_VERSIONS = EOL_DISTROS = None
 
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
@@ -92,6 +94,20 @@ class AccessibilityManagerTests(unittest.TestCase):
         self.assertEqual(shortcuts["<Control>minus"], "Decrease text size")
         self.assertEqual(shortcuts["<Control>0"], "Reset text size")
         self.assertEqual(shortcuts["<Control><Shift>h"], "Toggle high-contrast styling")
+
+    def test_release_list_includes_current_lts_and_marks_interim_eol(self):
+        self.assertEqual(DISTRO_VERSIONS["stonking"], "26.10")
+        self.assertEqual(DISTRO_VERSIONS["jammy"], "22.04 LTS")
+        self.assertEqual(EOL_DISTROS, {"questing", "plucky", "oracular"})
+        with patch.object(app_module, "_", side_effect=lambda message: message):
+            self.assertEqual(
+                app_module.format_distro_label("questing", "25.10"),
+                "Questing (25.10) — no longer supported",
+            )
+            self.assertEqual(
+                app_module.format_distro_label("resolute", "26.04 LTS"),
+                "Resolute (26.04 LTS)",
+            )
 
     def test_registers_zoom_and_contrast_actions_with_shortcuts(self):
         self.assertIsNotNone(self.app.lookup_action("zoom-in"))

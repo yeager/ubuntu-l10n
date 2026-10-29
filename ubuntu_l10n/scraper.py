@@ -48,13 +48,16 @@ class PackageStats:
 
 
 DISTRO_VERSIONS = {
+    "stonking": "26.10",
     "resolute": "26.04",
     "questing": "25.10",
     "plucky": "25.04",
     "oracular": "24.10",
     "noble": "24.04 LTS",
+    "jammy": "22.04 LTS",
     "focal": "20.04 LTS",
 }
+EOL_DISTROS = frozenset({"questing", "plucky", "oracular"})
 
 # Language codes for common Ubuntu languages
 LANGUAGES = {

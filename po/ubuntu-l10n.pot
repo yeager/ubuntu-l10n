@@ -255,3 +255,8 @@ msgstr ""
 #: ubuntu_l10n/app.py:957
 msgid "General"
 msgstr ""
+
+#: ubuntu_l10n/app.py:53
+#, python-brace-format
+msgid "{release} — no longer supported"
+msgstr ""

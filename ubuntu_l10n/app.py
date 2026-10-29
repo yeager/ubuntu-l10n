@@ -26,7 +26,7 @@ from gi.repository import Gtk, Adw, GLib, Gio, Pango, Gdk  # noqa: E402
 from .package_filter import filter_and_sort_packages  # noqa: E402
 from .scraper import (  # noqa: E402
     fetch_all_packages, PackageStats,
-    DISTRO_VERSIONS, LANGUAGES,
+    DISTRO_VERSIONS, EOL_DISTROS, LANGUAGES,
     load_config, save_config,
 )
 from .accessibility import (  # noqa: E402
@@ -46,6 +46,13 @@ else:
 gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
+
+
+def format_distro_label(code: str, version: str) -> str:
+    label = f"{code.capitalize()} ({version})"
+    if code in EOL_DISTROS:
+        return _("{release} — no longer supported").format(release=label)
+    return label
 
 VERSION = __version__
 SHORTCUTS = (
@@ -306,8 +313,7 @@ class MainWindow(Adw.ApplicationWindow):
         distro_model = Gtk.StringList()
         distro_items = []
         for code, ver in DISTRO_VERSIONS.items():
-            label = f"{code.capitalize()} ({ver})"
-            distro_model.append(label)
+            distro_model.append(format_distro_label(code, ver))
             distro_items.append(code)
         self._distro_items = distro_items
 
