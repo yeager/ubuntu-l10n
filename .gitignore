@@ -21,3 +21,5 @@ __pycache__/
 .vscode/
 .idea/
 *.mo
+*.bak
+debian/files
