@@ -1,6 +1,8 @@
 import json
 import stat
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -38,6 +40,62 @@ class JsonStorageTests(unittest.TestCase):
             self.assertEqual(scraper.load_cache("noble", "sv"), (None, None))
             scraper.save_cache("noble", "sv", [])
             self.assertEqual(json.loads(self.cache_file.read_text(encoding="utf-8"))["noble_sv"]["data"], [])
+
+    def test_concurrent_cache_updates_preserve_both_entries(self):
+        first_write_started = threading.Event()
+        release_first_write = threading.Event()
+        second_writer_started = threading.Event()
+        write_guard = threading.Lock()
+        active_writes = 0
+        concurrent_writes = False
+        original_write = scraper._atomic_write_json
+
+        def controlled_write(path, data):
+            nonlocal active_writes, concurrent_writes
+            with write_guard:
+                if active_writes:
+                    concurrent_writes = True
+                active_writes += 1
+                write_number = active_writes
+            if write_number == 1:
+                first_write_started.set()
+                if not release_first_write.wait(timeout=5):
+                    raise TimeoutError("test did not release the first cache write")
+            try:
+                original_write(path, data)
+            finally:
+                with write_guard:
+                    active_writes -= 1
+
+        with (
+            patch.object(scraper, "CACHE_FILE", self.cache_file),
+            patch.object(scraper, "CACHE_DIR", self.cache_file.parent),
+            patch.object(scraper, "_atomic_write_json", side_effect=controlled_write),
+        ):
+            first = threading.Thread(
+                target=scraper.save_cache, args=("noble", "sv", [{"name": "Swedish"}]),
+            )
+            second = threading.Thread(
+                target=lambda: (
+                    second_writer_started.set(),
+                    scraper.save_cache("noble", "de", [{"name": "German"}]),
+                ),
+            )
+            first.start()
+            self.assertTrue(first_write_started.wait(timeout=2))
+            second.start()
+            self.assertTrue(second_writer_started.wait(timeout=2))
+            time.sleep(0.05)
+            release_first_write.set()
+            first.join(timeout=5)
+            second.join(timeout=5)
+
+        self.assertFalse(first.is_alive())
+        self.assertFalse(second.is_alive())
+        self.assertFalse(concurrent_writes)
+        cache = json.loads(self.cache_file.read_text(encoding="utf-8"))
+        self.assertEqual(cache["noble_sv"]["data"], [{"name": "Swedish"}])
+        self.assertEqual(cache["noble_de"]["data"], [{"name": "German"}])
 
 
 class RequestRetryTests(unittest.TestCase):

@@ -21,6 +21,7 @@ CONFIG_DIR = Path.home() / ".config" / "ubuntu-l10n"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 REQUEST_DELAY = 0.8  # seconds between requests
+_CACHE_WRITE_LOCK = threading.Lock()
 
 
 @dataclass
@@ -149,18 +150,19 @@ def load_cache(distro: str, lang: str) -> tuple[list | None, float | None]:
 
 def save_cache(distro: str, lang: str, data: list[dict]):
     """Save data to cache with current timestamp."""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    try:
-        cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
-        if not isinstance(cache, dict):
+    with _CACHE_WRITE_LOCK:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            if not isinstance(cache, dict):
+                cache = {}
+        except (OSError, json.JSONDecodeError):
             cache = {}
-    except (OSError, json.JSONDecodeError):
-        cache = {}
-    cache[_cache_key(distro, lang)] = {
-        "data": data,
-        "timestamp": time.time(),
-    }
-    _atomic_write_json(CACHE_FILE, cache)
+        cache[_cache_key(distro, lang)] = {
+            "data": data,
+            "timestamp": time.time(),
+        }
+        _atomic_write_json(CACHE_FILE, cache)
 
 
 def _request_with_retry(session: requests.Session, url: str,
