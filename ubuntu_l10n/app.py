@@ -23,6 +23,7 @@ except (ValueError, ImportError):
     HAS_NOTIFY = False
 from gi.repository import Gtk, Adw, GLib, Gio, Pango, Gdk  # noqa: E402
 
+from .package_filter import filter_and_sort_packages  # noqa: E402
 from .scraper import (  # noqa: E402
     fetch_all_packages, PackageStats,
     DISTRO_VERSIONS, LANGUAGES,
@@ -834,24 +835,11 @@ class MainWindow(Adw.ApplicationWindow):
             )
 
     def _filter_and_display(self):
-        query = self._search.get_text().lower().strip()
-
-        filtered = self.packages
-        if query:
-            filtered = [p for p in filtered if query in p.name.lower()]
-
         # Sort based on dropdown selection
         sort_key = self._sort_options[self._sort_drop.get_selected()][0]
-        if sort_key == "name_asc":
-            filtered.sort(key=lambda p: p.name.lower())
-        elif sort_key == "most_translated":
-            filtered.sort(key=lambda p: p.translated_pct, reverse=True)
-        elif sort_key == "least_translated":
-            filtered.sort(key=lambda p: p.translated_pct)
-        elif sort_key == "most_strings":
-            filtered.sort(key=lambda p: p.total, reverse=True)
-        elif sort_key == "last_updated":
-            filtered.sort(key=lambda p: p.last_edited or "", reverse=True)
+        filtered = filter_and_sort_packages(
+            self.packages, self._search.get_text(), sort_key,
+        )
         self.filtered_packages = filtered
 
         # Update summary
