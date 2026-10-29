@@ -1,10 +1,15 @@
 """Scrape translation statistics from Launchpad with caching and rate limiting."""
 
 import json
+import math
+import os
 import re
+import tempfile
 import threading
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Callable
 
@@ -17,6 +22,7 @@ CONFIG_DIR = Path.home() / ".config" / "ubuntu-l10n"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 REQUEST_DELAY = 0.8  # seconds between requests
+_CACHE_WRITE_LOCK = threading.Lock()
 
 
 @dataclass
@@ -90,15 +96,37 @@ BASE_URL = "https://translations.launchpad.net/ubuntu"
 def load_config() -> dict:
     """Load config from ~/.config/ubuntu-l10n/config.json."""
     try:
-        return json.loads(CONFIG_FILE.read_text())
-    except Exception:
+        config = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        return config if isinstance(config, dict) else {}
+    except (OSError, json.JSONDecodeError):
         return {}
+
+
+def _atomic_write_json(path: Path, data: dict):
+    """Write JSON atomically with owner-only permissions."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(data, stream, indent=2)
+            stream.write("\n")
+        os.replace(temporary_name, path)
+    except BaseException:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        try:
+            os.unlink(temporary_name)
+        except OSError:
+            pass
+        raise
 
 
 def save_config(config: dict):
     """Save config to ~/.config/ubuntu-l10n/config.json."""
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    CONFIG_FILE.write_text(json.dumps(config, indent=2))
+    _atomic_write_json(CONFIG_FILE, config)
 
 
 def _cache_key(distro: str, lang: str) -> str:
@@ -112,41 +140,75 @@ def load_cache(distro: str, lang: str) -> tuple[list | None, float | None]:
         key = _cache_key(distro, lang)
         if key in cache:
             entry = cache[key]
-            return entry["data"], entry["timestamp"]
-    except Exception:
+            if isinstance(entry, dict) and isinstance(entry.get("data"), list):
+                timestamp = entry.get("timestamp")
+                if isinstance(timestamp, (int, float)) and not isinstance(timestamp, bool):
+                    try:
+                        timestamp = float(timestamp)
+                    except (OverflowError, ValueError):
+                        timestamp = None
+                    if timestamp is not None and math.isfinite(timestamp) and timestamp >= 0:
+                        return entry["data"], timestamp
+    except (OSError, json.JSONDecodeError, TypeError, AttributeError):
         pass
     return None, None
 
 
 def save_cache(distro: str, lang: str, data: list[dict]):
     """Save data to cache with current timestamp."""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    try:
-        cache = json.loads(CACHE_FILE.read_text())
-    except Exception:
-        cache = {}
-    cache[_cache_key(distro, lang)] = {
-        "data": data,
-        "timestamp": time.time(),
-    }
-    CACHE_FILE.write_text(json.dumps(cache, indent=2))
+    with _CACHE_WRITE_LOCK:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            if not isinstance(cache, dict):
+                cache = {}
+        except (OSError, json.JSONDecodeError):
+            cache = {}
+        cache[_cache_key(distro, lang)] = {
+            "data": data,
+            "timestamp": time.time(),
+        }
+        _atomic_write_json(CACHE_FILE, cache)
 
 
 def _request_with_retry(session: requests.Session, url: str,
                         max_retries: int = 4) -> requests.Response:
-    """Make a GET request with exponential backoff on 429."""
-    for attempt in range(max_retries):
-        r = session.get(url, timeout=30)
-        if r.status_code == 429:
-            wait = 2 ** (attempt + 1)  # 2, 4, 8, 16
+    """GET with bounded exponential backoff for transient network/server errors."""
+    attempts = max(1, max_retries)
+    for attempt in range(attempts):
+        try:
+            response = session.get(url, timeout=30)
+        except (requests.Timeout, requests.ConnectionError):
+            if attempt + 1 == attempts:
+                raise
+            time.sleep(2 ** (attempt + 1))
+            continue
+
+        if response.status_code == 429 or 500 <= response.status_code < 600:
+            if attempt + 1 == attempts:
+                response.raise_for_status()
+            retry_after = response.headers.get("Retry-After") if response.status_code == 429 else None
+            try:
+                if retry_after:
+                    try:
+                        wait = float(retry_after)
+                    except ValueError:
+                        retry_at = parsedate_to_datetime(retry_after)
+                        if retry_at.tzinfo is None:
+                            retry_at = retry_at.replace(tzinfo=timezone.utc)
+                        wait = (retry_at - datetime.now(timezone.utc)).total_seconds()
+                    wait = min(max(wait, 0), 60)
+                else:
+                    wait = 2 ** (attempt + 1)
+            except (TypeError, ValueError, OverflowError):
+                wait = 2 ** (attempt + 1)
             time.sleep(wait)
             continue
-        r.raise_for_status()
-        return r
-    # Final attempt
-    r = session.get(url, timeout=30)
-    r.raise_for_status()
-    return r
+
+        response.raise_for_status()
+        return response
+
+    raise requests.RequestException("Request failed without a response")
 
 
 def get_lang_url(distro: str, lang: str, batch: int = 300, start: int = 0) -> str:
@@ -228,10 +290,11 @@ def get_total_count(html: str) -> int:
     soup = BeautifulSoup(html, "lxml")
     nav = soup.find("td", class_="batch-navigation-index")
     if nav:
-        text = nav.get_text()
-        m = re.search(r"of\s+(\d+)", text)
+        text = nav.get_text(" ", strip=True)
+        m = re.search(r"\bof\s+([\d][\d,.\s]*)", text, re.IGNORECASE)
         if m:
-            return int(m.group(1))
+            count = re.sub(r"[,.\s]", "", m.group(1))
+            return int(count)
     return 0
 
 
@@ -240,7 +303,37 @@ def _packages_to_dicts(packages: list[PackageStats]) -> list[dict]:
 
 
 def _dicts_to_packages(dicts: list[dict]) -> list[PackageStats]:
-    return [PackageStats(**d) for d in dicts]
+    if not isinstance(dicts, list):
+        raise ValueError("Cached package data must be a list")
+    required = set(PackageStats.__dataclass_fields__)
+    string_fields = ("name", "last_edited", "last_editor", "translate_url")
+    integer_fields = ("untranslated", "need_review", "changed", "total")
+    packages = []
+    for item in dicts:
+        if not isinstance(item, dict) or set(item) != required:
+            raise ValueError("Cached package entry has an unexpected structure")
+        if any(not isinstance(item[field], str) for field in string_fields):
+            raise ValueError("Cached package text fields must be strings")
+        percentage = item["translated_pct"]
+        if isinstance(percentage, bool) or not isinstance(percentage, (int, float)):
+            raise ValueError("Cached translation percentage is invalid")
+        try:
+            percentage = float(percentage)
+        except (OverflowError, ValueError):
+            raise ValueError("Cached translation percentage is invalid") from None
+        if not math.isfinite(percentage) or not 0 <= percentage <= 100:
+            raise ValueError("Cached translation percentage is invalid")
+        if any(
+            isinstance(item[field], bool)
+            or not isinstance(item[field], int)
+            or item[field] < 0
+            for field in integer_fields
+        ):
+            raise ValueError("Cached package counts must be non-negative integers")
+        if item["untranslated"] > item["total"]:
+            raise ValueError("Cached untranslated count exceeds its total")
+        packages.append(PackageStats(**item))
+    return packages
 
 
 def fetch_all_packages(distro: str, lang: str, callback=None,
@@ -251,20 +344,27 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
     cache_cb(packages, age_minutes) — called if cached data is available.
     force — skip cache.
     """
-    # Check cache first
+    # Check cache first. Keep stale data available while refreshing so the UI
+    # can still show useful results if Launchpad is temporarily unavailable.
     if not force:
         cached_data, cached_ts = load_cache(distro, lang)
-        if cached_data and cached_ts:
-            age_seconds = time.time() - cached_ts
-            if age_seconds < 3600:  # < 1 hour
-                age_minutes = int(age_seconds / 60)
+        if cached_data is not None and cached_ts is not None:
+            try:
                 packages = _dicts_to_packages(cached_data)
+            except (TypeError, ValueError):
+                packages = None
+            if packages is not None:
+                age_seconds = time.time() - cached_ts
+                age_minutes = int(age_seconds / 60) if age_seconds >= 0 else None
+                cache_is_fresh = age_seconds >= 0 and age_seconds < 3600
                 if cache_cb:
                     cache_cb(packages, age_minutes)
-                return packages
+                if cache_is_fresh:
+                    return packages
 
     session = requests.Session()
-    session.headers["User-Agent"] = "ubuntu-l10n/0.1.0"
+    from . import __version__
+    session.headers["User-Agent"] = f"ubuntu-l10n/{__version__}"
 
     batch = 300
     all_packages = []

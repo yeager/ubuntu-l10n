@@ -18,12 +18,31 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install build tools
-        run: python -m pip install --upgrade build twine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+          python -m pip install --upgrade build twine
+      - name: Compile translations
+        run: python scripts/compile-translations.py
       - name: Run release sanity tests
         run: python -m unittest discover -s tests -v
       - name: Build distributions
         run: |
           python -m build
           python -m twine check dist/*
+          python - <<'PY'
+          from pathlib import Path
+          from tarfile import open as open_tar
+          from zipfile import ZipFile
+
+          wheel, = Path("dist").glob("*.whl")
+          sdist, = Path("dist").glob("*.tar.gz")
+          wheel_catalogue = "ubuntu_l10n/locale/sv/LC_MESSAGES/ubuntu-l10n.mo"
+          with ZipFile(wheel) as archive:
+              assert wheel_catalogue in archive.namelist(), "Swedish catalogue missing from wheel"
+          with open_tar(sdist, "r:gz") as archive:
+              assert any(member.name.endswith("/" + wheel_catalogue) for member in archive.getmembers()), \
+                  "Swedish catalogue missing from source distribution"
+          PY
       - name: Publish distributions
         uses: pypa/gh-action-pypi-publish@release/v1

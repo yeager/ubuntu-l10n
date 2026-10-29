@@ -5,10 +5,11 @@ from datetime import datetime as _dt_now
 import gettext
 import json
 import locale
-import os
+import platform as _platform
 import sys
 import threading
 import webbrowser
+from pathlib import Path as _Path
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -27,16 +28,36 @@ from .scraper import (  # noqa: E402
     DISTRO_VERSIONS, LANGUAGES,
     load_config, save_config,
 )
+from .accessibility import (  # noqa: E402
+    AccessibilityManager, associate_mnemonic, set_accessible_label,
+)
+from . import __version__  # noqa: E402
 
 # i18n setup
-LOCALEDIR = os.path.join(os.path.dirname(__file__), '..', 'po', 'locale')
-if not os.path.isdir(LOCALEDIR):
-    LOCALEDIR = '/usr/share/locale'
+_PACKAGE_LOCALEDIR = _Path(__file__).resolve().parent / "locale"
+_SOURCE_LOCALEDIR = _Path(__file__).resolve().parent.parent / "locale"
+if _PACKAGE_LOCALEDIR.is_dir():
+    LOCALEDIR = str(_PACKAGE_LOCALEDIR)
+elif _SOURCE_LOCALEDIR.is_dir():
+    LOCALEDIR = str(_SOURCE_LOCALEDIR)
+else:
+    LOCALEDIR = "/usr/share/locale"
 gettext.bindtextdomain('ubuntu-l10n', LOCALEDIR)
 gettext.textdomain('ubuntu-l10n')
 _ = gettext.gettext
 
-VERSION = "0.3.4"
+VERSION = __version__
+SHORTCUTS = (
+    ("<Control>q", _("Quit")),
+    ("F5", _("Refresh data")),
+    ("<Control>slash", _("Keyboard shortcuts")),
+    ("<Control>f", _("Search packages…")),
+    ("<Control>plus", _("Increase text size")),
+    ("<Control>equal", _("Increase text size")),
+    ("<Control>minus", _("Decrease text size")),
+    ("<Control>0", _("Reset text size")),
+    ("<Control><Shift>h", _("Toggle high-contrast styling")),
+)
 
 
 def _setup_heatmap_css():
@@ -80,10 +101,6 @@ def get_system_language() -> str:
 
 
 
-import json as _json
-import platform as _platform
-from pathlib import Path as _Path
-
 _NOTIFY_APP = "ubuntu-l10n"
 
 
@@ -93,7 +110,7 @@ def _notify_config_path():
 
 def _load_notify_config():
     try:
-        return _json.loads(_notify_config_path().read_text())
+        return json.loads(_notify_config_path().read_text())
     except Exception:
         return {"enabled": True}
 
@@ -101,7 +118,7 @@ def _load_notify_config():
 def _save_notify_config(config):
     p = _notify_config_path()
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(_json.dumps(config))
+    p.write_text(json.dumps(config))
 
 
 def _send_notification(summary, body="", icon="dialog-information"):
@@ -191,6 +208,8 @@ class MainWindow(Adw.ApplicationWindow):
         self.filtered_packages: list[PackageStats] = []
         self._from_cache = False
         self._cache_age = 0
+        self._loaded_key = None
+        self._load_generation = 0
         self._heatmap_mode = False
 
         # Detect system language
@@ -213,13 +232,17 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Refresh button
         refresh_btn = Gtk.Button(icon_name="view-refresh-symbolic")
-        refresh_btn.set_tooltip_text(_("Refresh data"))
+        refresh_label = _("Refresh data")
+        refresh_btn.set_tooltip_text(refresh_label)
+        set_accessible_label(refresh_btn, refresh_label)
         refresh_btn.connect("clicked", self._on_refresh)
         header.pack_start(refresh_btn)
 
         # Heatmap toggle
         self._heatmap_btn = Gtk.ToggleButton(icon_name="view-grid-symbolic")
-        self._heatmap_btn.set_tooltip_text(_("Toggle heatmap view"))
+        heatmap_label = _("Toggle heatmap view")
+        self._heatmap_btn.set_tooltip_text(heatmap_label)
+        set_accessible_label(self._heatmap_btn, heatmap_label)
         self._heatmap_btn.connect("toggled", self._on_heatmap_toggled)
         header.pack_start(self._heatmap_btn)
 
@@ -229,16 +252,20 @@ class MainWindow(Adw.ApplicationWindow):
         menu.append(_("Notifications"), "win.toggle-notifications")
         menu.append(_("About"), "win.about")
         menu_btn = Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu)
-        menu_btn.set_tooltip_text(_("Menu"))
+        menu_label = _("Menu")
+        menu_btn.set_tooltip_text(menu_label)
+        set_accessible_label(menu_btn, menu_label)
         header.pack_end(menu_btn)
 
         # Theme toggle
         self._theme_btn = Gtk.Button(icon_name="weather-clear-night-symbolic",
                                      tooltip_text=_("Toggle dark/light theme"))
+        set_accessible_label(self._theme_btn, _("Toggle dark/light theme"))
         self._theme_btn.connect("clicked", self._on_theme_toggle)
         # Export button
         export_btn = Gtk.Button(icon_name="document-save-symbolic",
                                 tooltip_text=_("Export data"))
+        set_accessible_label(export_btn, _("Export data"))
         export_btn.connect("clicked", self._on_export_clicked)
         header.pack_end(export_btn)
 
@@ -274,6 +301,7 @@ class MainWindow(Adw.ApplicationWindow):
         controls.set_margin_bottom(8)
 
         # Distribution selector
+        self._mnemonic_keys = set()
         distro_model = Gtk.StringList()
         distro_items = []
         for code, ver in DISTRO_VERSIONS.items():
@@ -289,6 +317,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         distro_label = Gtk.Label(label=_("Release:"))
         distro_label.add_css_class("dim-label")
+        associate_mnemonic(distro_label, distro_drop, self._mnemonic_keys)
         controls.append(distro_label)
         controls.append(distro_drop)
 
@@ -310,6 +339,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         lang_label = Gtk.Label(label=_("Language:"))
         lang_label.add_css_class("dim-label")
+        associate_mnemonic(lang_label, lang_drop, self._mnemonic_keys)
         controls.append(lang_label)
         controls.append(lang_drop)
 
@@ -331,22 +361,32 @@ class MainWindow(Adw.ApplicationWindow):
 
         sort_label = Gtk.Label(label=_("Sort:"))
         sort_label.add_css_class("dim-label")
+        associate_mnemonic(sort_label, sort_drop, self._mnemonic_keys)
         controls.append(sort_label)
         controls.append(sort_drop)
 
         # Statistics button
         stats_btn = Gtk.Button(icon_name="dialog-information-symbolic")
-        stats_btn.set_tooltip_text(_("Language statistics"))
+        stats_label = _("Language statistics")
+        stats_btn.set_tooltip_text(stats_label)
+        set_accessible_label(stats_btn, stats_label)
         stats_btn.connect("clicked", self._on_show_stats)
         controls.append(stats_btn)
 
         # Search
         search = Gtk.SearchEntry()
-        search.set_placeholder_text(_("Search packages…"))
+        search_label = _("Search packages…")
+        search.set_placeholder_text(search_label)
+        set_accessible_label(search, search_label)
         search.set_hexpand(True)
         search.connect("search-changed", self._on_search_changed)
         self._search = search
         controls.append(search)
+
+        key_controller = Gtk.EventControllerKey()
+        key_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        key_controller.connect("key-pressed", self._on_key_pressed)
+        self.add_controller(key_controller)
 
         content.append(controls)
 
@@ -424,6 +464,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Apply CSS
         self._apply_css()
         _setup_heatmap_css()
+        self._accessibility_manager = AccessibilityManager(self)
 
         # Show welcome dialog on first run, then load data
         config = load_config()
@@ -508,7 +549,9 @@ class MainWindow(Adw.ApplicationWindow):
             self._theme_btn.set_icon_name("weather-clear-symbolic")
 
     def _update_last_updated(self):
-        self._last_update_label.set_text("Last updated: " + _dt_now.now().strftime("%Y-%m-%d %H:%M"))
+        self._last_update_label.set_text(
+            _("Last updated") + ": " + _dt_now.now().strftime("%Y-%m-%d %H:%M")
+        )
 
     def _on_export_clicked(self, *_args):
         dialog = Adw.MessageDialog(transient_for=self,
@@ -561,6 +604,12 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_search_changed(self, entry):
         self._filter_and_display()
+
+    def _on_key_pressed(self, _controller, keyval, _keycode, state):
+        if keyval == Gdk.KEY_f and state & Gdk.ModifierType.CONTROL_MASK:
+            self._search.grab_focus()
+            return True
+        return False
 
     def _on_sort_changed(self, _drop, _pspec):
         self._filter_and_display()
@@ -652,7 +701,8 @@ class MainWindow(Adw.ApplicationWindow):
             developers=["Daniel Nylander <daniel@danielnylander.se>"],
             copyright="© 2026 Daniel Nylander",
             license_type=Gtk.License.GPL_3_0,
-            website="https://github.com/yeager/ubuntu-l10n",
+            website="https://www.danielnylander.se",
+            support_url="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
             comments=_("View Ubuntu translation statistics from Launchpad"),
             translator_credits=_("Translate this app: https://www.transifex.com/danielnylander/ubuntu-l10n/"),
@@ -662,11 +712,15 @@ class MainWindow(Adw.ApplicationWindow):
         about.present(self)
 
     def _load_data(self, force=False):
+        self._load_generation += 1
+        generation = self._load_generation
+        data_key = (self._current_distro, self._current_lang)
+        cache_state = {"fresh": False}
         self._spinner.start()
         self._stack.set_visible_child_name("loading")
         self._loading_label.set_text(_("Loading translations…"))
-        distro = self._current_distro
-        lang = self._current_lang
+        self._last_update_label.set_text("")
+        distro, lang = data_key
 
         self._title_widget.set_subtitle(
             f"{distro.capitalize()} · {LANGUAGES.get(lang, lang)}"
@@ -674,13 +728,15 @@ class MainWindow(Adw.ApplicationWindow):
 
         def progress_cb(loaded, total):
             GLib.idle_add(
-                self._loading_label.set_text,
-                _("Loading… {loaded}/{total} templates").format(
-                    loaded=loaded, total=total)
+                self._show_load_progress, generation, loaded, total,
             )
 
         def cache_cb(packages, age_minutes):
-            GLib.idle_add(self._on_data_loaded, packages, True, age_minutes)
+            cache_state["fresh"] = age_minutes is not None and age_minutes < 60
+            GLib.idle_add(
+                self._on_data_loaded, packages, True, age_minutes,
+                generation, data_key,
+            )
 
         def worker():
             try:
@@ -690,12 +746,26 @@ class MainWindow(Adw.ApplicationWindow):
                     cache_cb=None if force else cache_cb,
                     force=force,
                 )
-                GLib.idle_add(self._on_data_loaded, packages, False, 0)
+                if not cache_state["fresh"]:
+                    GLib.idle_add(
+                        self._on_data_loaded, packages, False, 0,
+                        generation, data_key,
+                    )
             except Exception as e:
-                GLib.idle_add(self._on_data_error, str(e))
+                GLib.idle_add(self._on_data_error, str(e), generation, data_key)
 
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
+
+    def _show_load_progress(self, generation: int, loaded: int, total: int):
+        if generation != self._load_generation:
+            return GLib.SOURCE_REMOVE
+        self._loading_label.set_text(
+            _("Loading… {loaded}/{total} templates").format(
+                loaded=loaded, total=total,
+            ),
+        )
+        return GLib.SOURCE_REMOVE
 
     def _on_heatmap_toggled(self, btn):
         self._heatmap_mode = btn.get_active()
@@ -703,10 +773,16 @@ class MainWindow(Adw.ApplicationWindow):
             self._filter_and_display()
 
     def _on_data_loaded(self, packages: list[PackageStats],
-                        from_cache: bool = False, age_minutes: int = 0):
+                        from_cache: bool = False, age_minutes: int | None = 0,
+                        generation: int | None = None,
+                        data_key: tuple[str, str] | None = None):
+        if generation is not None and generation != self._load_generation:
+            return GLib.SOURCE_REMOVE
         self._spinner.stop()
         self._update_last_updated()
         self.packages = packages
+        if data_key is not None:
+            self._loaded_key = data_key
         self._from_cache = from_cache
         self._cache_age = age_minutes
         # Notify about low translations
@@ -723,9 +799,39 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             self._stack.set_visible_child_name("content")
 
-    def _on_data_error(self, error: str):
+    def _on_data_error(self, error: str,
+                       generation: int | None = None,
+                       data_key: tuple[str, str] | None = None):
+        if generation is not None and generation != self._load_generation:
+            return GLib.SOURCE_REMOVE
         self._spinner.stop()
-        self._loading_label.set_text(_("Error: {error}").format(error=error))
+        if self.packages and data_key is not None and self._loaded_key == data_key:
+            message = _(
+                "Could not refresh Launchpad. The last results are still "
+                "visible. Check your connection and select Refresh data to "
+                "try again."
+            )
+            self._last_update_label.set_text(message)
+            self._stack.set_visible_child_name(
+                "heatmap" if self._heatmap_mode else "content",
+            )
+            status_widget = self._last_update_label
+        else:
+            message = _(
+                "Could not load translation data from Launchpad. Check your "
+                "internet connection, then select Refresh data to try again."
+            )
+            self._loading_label.set_text(message)
+            self._stack.set_visible_child_name("loading")
+            status_widget = self._loading_label
+        self.announce_to_screen_reader(status_widget, message)
+        return GLib.SOURCE_REMOVE
+
+    def announce_to_screen_reader(self, widget, message):
+        if hasattr(Gtk.Accessible, "announce"):
+            Gtk.Accessible.announce(
+                widget, message, Gtk.AccessibleAnnouncementPriority.MEDIUM,
+            )
 
     def _filter_and_display(self):
         query = self._search.get_text().lower().strip()
@@ -772,7 +878,7 @@ class MainWindow(Adw.ApplicationWindow):
             )
             if self._from_cache:
                 summary += " · " + _("Cached ({age} min ago)").format(
-                    age=self._cache_age)
+                    age="?" if self._cache_age is None else self._cache_age)
             self._summary.set_text(summary)
             self._overall_progress.set_fraction(overall_pct / 100.0)
             self._overall_progress.set_text(f"{overall_pct:.1f}%")
@@ -854,8 +960,8 @@ class TranslationApp(Adw.Application):
     def _show_shortcuts_window(self, *_args):
         win = Gtk.ShortcutsWindow(transient_for=self.get_active_window(), modal=True)
         section = Gtk.ShortcutsSection(visible=True, max_height=10)
-        group = Gtk.ShortcutsGroup(visible=True, title="General")
-        for accel, title in [("<Control>q", "Quit"), ("F5", "Refresh"), ("<Control>slash", "Keyboard shortcuts")]:
+        group = Gtk.ShortcutsGroup(visible=True, title=_("General"))
+        for accel, title in SHORTCUTS:
             s = Gtk.ShortcutsShortcut(visible=True, accelerator=accel, title=title)
             group.append(s)
         section.append(group)

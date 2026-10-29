@@ -9,11 +9,11 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7.1.0
         with:
           python-version: '3.12'
 
@@ -21,14 +21,7 @@ jobs:
         run: sudo apt-get install -y gettext
 
       - name: Compile translations
-        run: |
-          for po in po/*.po; do
-            [ -f "$po" ] || continue
-            lang=$(basename "$po" .po)
-            mkdir -p locale/$lang/LC_MESSAGES
-            msgfmt -o locale/$lang/LC_MESSAGES/ubuntu-l10n.mo "$po"
-          done
-
+        run: python3 scripts/compile-translations.py
 
       - name: Generate translated .desktop file
         run: |
@@ -36,44 +29,17 @@ jobs:
 
       - name: Build .deb
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          PKG=$(mktemp -d)
-          mkdir -p $PKG/usr/lib/python3/dist-packages/ubuntu_l10n
-          mkdir -p $PKG/usr/bin
-          mkdir -p $PKG/usr/share/applications
-          mkdir -p $PKG/DEBIAN
-
-          cp ubuntu_l10n/*.py $PKG/usr/lib/python3/dist-packages/ubuntu_l10n/
-
-          for mo in locale/*/LC_MESSAGES/ubuntu-l10n.mo; do
-            [ -f "$mo" ] || continue
-            lang=$(echo "$mo" | cut -d/ -f2)
-            mkdir -p $PKG/usr/share/locale/$lang/LC_MESSAGES
-            cp "$mo" $PKG/usr/share/locale/$lang/LC_MESSAGES/
-          done
-
-          desktop=$(find data/ -name "*.desktop" 2>/dev/null | head -1)
-          [ -n "$desktop" ] && cp "$desktop" $PKG/usr/share/applications/
-
-          icon=$(find data/icons/ -name "*.svg" 2>/dev/null | head -1)
-          if [ -n "$icon" ]; then
-            mkdir -p $PKG/usr/share/icons/hicolor/scalable/apps
-            cp "$icon" $PKG/usr/share/icons/hicolor/scalable/apps/
-          fi
-
-          printf '#!/usr/bin/env python3\nfrom ubuntu_l10n.app import main\nmain()\n' > $PKG/usr/bin/ubuntu-l10n
-          chmod +x $PKG/usr/bin/ubuntu-l10n
-
-          printf 'Package: ubuntu-l10n\nVersion: %s-1\nSection: devel\nPriority: optional\nArchitecture: all\nDepends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1\nMaintainer: Daniel Nylander <daniel@danielnylander.se>\nHomepage: https://github.com/yeager/ubuntu-l10n\nDescription: Ubuntu/Launchpad translation statistics viewer\n' "$VERSION" > $PKG/DEBIAN/control
-
-          dpkg-deb --root-owner-group --build $PKG ubuntu-l10n_${VERSION}-1_all.deb
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          bash scripts/build-deb.sh build/release "$VERSION"
 
       - name: Create release and upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          gh release create "$GITHUB_REF_NAME" "ubuntu-l10n_${VERSION}-1_all.deb" \
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" "build/release/ubuntu-l10n_${VERSION}-1_all.deb" \
             --title "v${VERSION}" \
             --notes "Release v${VERSION} with checked-in translations" \
             --repo yeager/ubuntu-l10n

@@ -4,6 +4,28 @@ gi.require_version('Gtk', '4.0')
 from gi.repository import Gtk, Gdk, Gio
 
 
+def set_accessible_label(widget, label):
+    """Give icon-only controls a name that assistive technology can announce."""
+    widget.update_property(
+        [Gtk.AccessibleProperty.LABEL],
+        [label],
+    )
+
+
+def associate_mnemonic(label, widget, used_mnemonics):
+    """Connect a translated label to its control using an unused letter."""
+    text = label.get_text()
+    for index, character in enumerate(text):
+        key = character.casefold()
+        if character.isalnum() and key not in used_mnemonics:
+            label.set_text_with_mnemonic(f"{text[:index]}_{text[index:]}")
+            used_mnemonics.add(key)
+            label.set_mnemonic_widget(widget)
+            return key
+    label.set_mnemonic_widget(widget)
+    return None
+
+
 class AccessibilityManager:
     """Manages accessibility features for a GTK4 window."""
 
@@ -40,10 +62,28 @@ class AccessibilityManager:
         if self._high_contrast:
             css += """
             window.high-contrast {
-                border: 2px solid @accent_color;
+                background-color: #000000;
+                color: #ffffff;
+                border: 2px solid #ffffff;
                 font-weight: bold;
             }"""
-        self._css.load_from_string(css.encode())
+            css += """
+            window.high-contrast label,
+            window.high-contrast .dim-label {
+                color: #ffffff;
+            }
+            window.high-contrast button,
+            window.high-contrast entry,
+            window.high-contrast dropdown {
+                background-color: #000000;
+                color: #ffffff;
+                border: 2px solid #ffffff;
+            }
+            window.high-contrast :focus {
+                border: 3px solid #ffff00;
+            }
+            """
+        self._css.load_from_string(css)
 
     def _zoom_in(self):
         self._font_scale = min(self._font_scale + 0.1, 3.0)
