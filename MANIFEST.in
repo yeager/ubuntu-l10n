@@ -1,1 +1,2 @@
 recursive-include ubuntu_l10n/locale *.mo
+global-exclude *.bak

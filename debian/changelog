@@ -1,3 +1,11 @@
+ubuntu-l10n (0.3.8-1) noble; urgency=medium
+
+  * Include compiled translations in Debian source builds.
+  * Improve accessibility, keyboard navigation, and Launchpad scraping.
+  * Preserve cached results when offline and validate cached data.
+
+ -- Daniel Nylander <daniel@danielnylander.se>  Thu, 29 Oct 2026 00:00:00 +0100
+
 ubuntu-l10n (0.3.6-0ppa1) noble; urgency=low
 
   * Initial PPA release.

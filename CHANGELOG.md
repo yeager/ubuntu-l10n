@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.8 — 2026-10-29
+
+- Include compiled translations in PyPI and Debian source builds
+- Improve accessibility controls and keyboard navigation
+- Keep cached translation data available when offline and handle malformed cache entries safely
+- Retry transient Launchpad errors and fetch every results page
+- Add automated tests for accessibility, caching, and Launchpad scraping
+
 ## 0.2.5 — 2026-02-15
 
 - Remove misplaced PacketLens keywords from Swedish translation backup
