@@ -93,6 +93,10 @@ LANGUAGES = {
 BASE_URL = "https://translations.launchpad.net/ubuntu"
 
 
+class LaunchpadResponseError(ValueError):
+    """Raised when Launchpad returns a page without usable statistics."""
+
+
 def load_config() -> dict:
     """Load config from ~/.config/ubuntu-l10n/config.json."""
     try:
@@ -223,7 +227,7 @@ def parse_page(html: str, distro: str) -> list[PackageStats]:
     soup = BeautifulSoup(html, "lxml")
     table = soup.find("table", class_="translation-stats")
     if not table:
-        return []
+        raise LaunchpadResponseError("Launchpad returned a page without translation statistics")
 
     packages = []
     for row in table.find_all("tr", id=True):
@@ -240,7 +244,14 @@ def parse_page(html: str, distro: str) -> list[PackageStats]:
 
         # Translated percentage
         sortkeys = cells[1].find_all("span", class_="sortkey")
-        translated_pct = float(sortkeys[0].get_text(strip=True)) if sortkeys else 0.0
+        if not sortkeys:
+            raise LaunchpadResponseError("Launchpad returned a package without a translation percentage")
+        try:
+            translated_pct = float(sortkeys[0].get_text(strip=True))
+        except ValueError as error:
+            raise LaunchpadResponseError("Launchpad returned an invalid translation percentage") from error
+        if not math.isfinite(translated_pct) or not 0 <= translated_pct <= 100:
+            raise LaunchpadResponseError("Launchpad returned an invalid translation percentage")
 
         # Untranslated, need review, changed
         def get_int(cell):
@@ -299,7 +310,7 @@ def get_total_count(html: str) -> int:
         if m:
             count = re.sub(r"[,.\s]", "", m.group(1))
             return int(count)
-    return 0
+    raise LaunchpadResponseError("Launchpad returned a page without a result count")
 
 
 def _packages_to_dicts(packages: list[PackageStats]) -> list[dict]:
@@ -379,6 +390,8 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
 
     total = get_total_count(resp.text)
     packages = parse_page(resp.text, distro)
+    if total > 0 and not packages:
+        raise LaunchpadResponseError("Launchpad reported results but returned no translation templates")
     all_packages.extend(packages)
 
     if callback:
@@ -391,6 +404,8 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
         url = get_lang_url(distro, lang, batch, start)
         resp = _request_with_retry(session, url)
         packages = parse_page(resp.text, distro)
+        if not packages:
+            raise LaunchpadResponseError("Launchpad returned an empty page before all results were loaded")
         all_packages.extend(packages)
         start += batch
         if callback:

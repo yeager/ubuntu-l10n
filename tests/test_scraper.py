@@ -185,7 +185,10 @@ class LaunchpadPaginationTests(unittest.TestCase):
     def test_malformed_cached_package_is_ignored_and_refetched(self):
         session = Mock()
         session.headers = {}
-        response = Mock(text="<html></html>")
+        response = Mock(text=(
+            '<table class="translation-stats"></table>'
+            '<td class="batch-navigation-index">0 to 0 of 0 results</td>'
+        ))
         cache_callback = Mock()
 
         with (
@@ -235,8 +238,42 @@ class LaunchpadPaginationTests(unittest.TestCase):
         html = '<table><tr><td class="batch-navigation-index">1 to 300 of 1,234 results</td></tr></table>'
         self.assertEqual(scraper.get_total_count(html), 1234)
 
+    def test_rejects_launchpad_soft_error_page_without_caching_empty_results(self):
+        session = Mock()
+        session.headers = {}
+        response = Mock(text="<html><body>Temporarily unavailable</body></html>")
+
+        with (
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(scraper, "_request_with_retry", return_value=response),
+            patch.object(scraper, "save_cache") as save_cache,
+        ):
+            with self.assertRaises(scraper.LaunchpadResponseError):
+                scraper.fetch_all_packages("noble", "sv", force=True)
+
+        save_cache.assert_not_called()
+
+    def test_rejects_empty_results_when_launchpad_reports_templates(self):
+        response = Mock(text=(
+            '<table class="translation-stats"></table>'
+            '<td class="batch-navigation-index">1 to 1 of 1 results</td>'
+        ))
+        with (
+            patch.object(scraper.requests, "Session") as session_factory,
+            patch.object(scraper, "_request_with_retry", return_value=response),
+            patch.object(scraper, "save_cache") as save_cache,
+        ):
+            session_factory.return_value.headers = {}
+            with self.assertRaises(scraper.LaunchpadResponseError):
+                scraper.fetch_all_packages("noble", "sv", force=True)
+
+        save_cache.assert_not_called()
+
     def test_fetches_every_page_when_total_uses_thousands_separator(self):
-        first_page = '<table><tr><td class="batch-navigation-index">1 to 300 of 1,234 results</td></tr></table>'
+        first_page = (
+            '<table class="translation-stats"></table>'
+            '<td class="batch-navigation-index">1 to 300 of 1,234 results</td>'
+        )
         session = Mock()
         session.headers = {}
         package = scraper.PackageStats(
@@ -244,24 +281,29 @@ class LaunchpadPaginationTests(unittest.TestCase):
             need_review=0, changed=0, total=1, last_edited="",
             last_editor="", translate_url="https://translations.launchpad.net/example",
         )
-        responses = [Mock(text=first_page)] + [Mock(text="<html></html>") for _ in range(4)]
+        later_page = '<table class="translation-stats"></table>'
+        responses = [Mock(text=first_page)] + [Mock(text=later_page) for _ in range(4)]
         expected_urls = [scraper.get_lang_url("noble", "sv", 300, start) for start in (0, 300, 600, 900, 1200)]
 
         with (
             patch.object(scraper.requests, "Session", return_value=session),
             patch.object(scraper, "_request_with_retry", side_effect=responses) as request,
-            patch.object(scraper, "parse_page", side_effect=[[package]] + [[] for _ in range(4)]),
+            patch.object(scraper, "parse_page", side_effect=[[package] for _ in range(5)]),
             patch.object(scraper, "save_cache") as save_cache,
             patch.object(scraper.time, "sleep"),
         ):
             result = scraper.fetch_all_packages("noble", "sv", force=True)
 
-        self.assertEqual(result, [package])
+        self.assertEqual(result, [package] * 5)
         self.assertEqual([call.args[1] for call in request.call_args_list], expected_urls)
-        save_cache.assert_called_once_with("noble", "sv", [scraper._packages_to_dicts([package])[0]])
+        save_cache.assert_called_once_with("noble", "sv", scraper._packages_to_dicts([package] * 5))
 
 
 class LaunchpadPackageParsingTests(unittest.TestCase):
+    def test_missing_translation_table_is_rejected(self):
+        with self.assertRaises(scraper.LaunchpadResponseError):
+            scraper.parse_page("<html><body>temporarily unavailable</body></html>", "noble")
+
     def test_parse_page_accepts_grouped_package_counts(self):
         html = """<table class="translation-stats"><tr id="ubuntu-example">
           <td><a href="/ubuntu/noble/+source/example">example</a></td>
