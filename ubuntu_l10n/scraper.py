@@ -306,16 +306,17 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
     cache_cb(packages, age_minutes) — called if cached data is available.
     force — skip cache.
     """
-    # Check cache first
+    # Check cache first. Keep stale data available while refreshing so the UI
+    # can still show useful results if Launchpad is temporarily unavailable.
     if not force:
         cached_data, cached_ts = load_cache(distro, lang)
-        if cached_data and cached_ts:
-            age_seconds = time.time() - cached_ts
+        if cached_data is not None and cached_ts is not None:
+            age_seconds = max(0, time.time() - cached_ts)
+            age_minutes = int(age_seconds / 60)
+            packages = _dicts_to_packages(cached_data)
+            if cache_cb:
+                cache_cb(packages, age_minutes)
             if age_seconds < 3600:  # < 1 hour
-                age_minutes = int(age_seconds / 60)
-                packages = _dicts_to_packages(cached_data)
-                if cache_cb:
-                    cache_cb(packages, age_minutes)
                 return packages
 
     session = requests.Session()

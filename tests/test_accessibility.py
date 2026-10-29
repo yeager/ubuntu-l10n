@@ -5,9 +5,9 @@ try:
     import gi
     gi.require_version("Adw", "1")
     gi.require_version("Gtk", "4.0")
-    from gi.repository import Adw, Gdk, Gio, Gtk
+    from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 except (ImportError, ValueError):
-    Adw = Gdk = Gio = Gtk = None
+    Adw = Gdk = Gio = GLib = Gtk = None
 
 if Adw is not None:
     from ubuntu_l10n.accessibility import (
@@ -130,6 +130,52 @@ class AccessibilityManagerTests(unittest.TestCase):
         action.activate(None)
         self.assertFalse(self.window.has_css_class("high-contrast"))
         self.assertEqual(parse_errors, [])
+
+
+@unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
+class DataLoadStateTests(unittest.TestCase):
+    def test_ignores_errors_from_an_outdated_selection(self):
+        window = Mock()
+        window._load_generation = 3
+
+        result = MainWindow._on_data_error(
+            window, "old network error", 2, ("noble", "sv"),
+        )
+
+        self.assertEqual(result, GLib.SOURCE_REMOVE)
+        window._spinner.stop.assert_not_called()
+        window._loading_label.set_text.assert_not_called()
+
+    def test_ignores_progress_from_an_outdated_selection(self):
+        window = Mock()
+        window._load_generation = 3
+
+        result = MainWindow._show_load_progress(window, 2, 300, 1200)
+
+        self.assertEqual(result, GLib.SOURCE_REMOVE)
+        window._loading_label.set_text.assert_not_called()
+
+    def test_network_error_keeps_matching_cached_results_visible(self):
+        window = Mock()
+        window._load_generation = 3
+        window.packages = [Mock()]
+        window._loaded_key = ("noble", "sv")
+        window._cache_age = 120
+        window._heatmap_mode = False
+        window.announce_to_screen_reader = Mock()
+
+        result = MainWindow._on_data_error(
+            window, "raw connection error", 3, ("noble", "sv"),
+        )
+
+        self.assertEqual(result, GLib.SOURCE_REMOVE)
+        message = window._last_update_label.set_text.call_args.args[0]
+        self.assertIn("The last results are still visible", message)
+        self.assertNotIn("raw connection error", message)
+        window._stack.set_visible_child_name.assert_called_once_with("content")
+        window.announce_to_screen_reader.assert_called_once_with(
+            window._last_update_label, message,
+        )
 
 
 if __name__ == "__main__":

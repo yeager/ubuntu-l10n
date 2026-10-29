@@ -87,6 +87,35 @@ class RequestRetryTests(unittest.TestCase):
 
 
 class LaunchpadPaginationTests(unittest.TestCase):
+    def test_emits_stale_cache_before_reporting_network_failure(self):
+        cached_data = [{
+            "name": "ubuntu-example",
+            "translated_pct": 75.0,
+            "untranslated": 25,
+            "need_review": 0,
+            "changed": 0,
+            "total": 100,
+            "last_edited": "",
+            "last_editor": "",
+            "translate_url": "https://translations.launchpad.net/ubuntu-example",
+        }]
+        session = Mock()
+        session.headers = {}
+        cache_callback = Mock()
+
+        with (
+            patch.object(scraper, "load_cache", return_value=(cached_data, 1200.0)),
+            patch.object(scraper.time, "time", return_value=8400.0),
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(scraper, "_request_with_retry", side_effect=requests.ConnectionError("offline")),
+        ):
+            with self.assertRaises(requests.ConnectionError):
+                scraper.fetch_all_packages("noble", "sv", cache_cb=cache_callback)
+
+        packages, age_minutes = cache_callback.call_args.args
+        self.assertEqual([package.name for package in packages], ["ubuntu-example"])
+        self.assertEqual(age_minutes, 120)
+
     def test_total_count_accepts_grouped_digits(self):
         html = '<table><tr><td class="batch-navigation-index">1 to 300 of 1,234 results</td></tr></table>'
         self.assertEqual(scraper.get_total_count(html), 1234)

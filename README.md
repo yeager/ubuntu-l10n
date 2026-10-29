@@ -48,6 +48,10 @@ settings for system-wide changes.
 Icon-only toolbar buttons have screen-reader names. The Release, Language and
 Sort labels provide keyboard mnemonics that move focus to their selectors.
 
+Translation results are cached locally for an hour. If a cached result is
+older, Ubuntu L10n shows it while trying Launchpad again. If that request
+fails, the saved result stays visible and the app explains how to retry.
+
 ## Author
 
 Daniel Nylander — [danielnylander.se](https://danielnylander.se)

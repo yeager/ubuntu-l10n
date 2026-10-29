@@ -206,6 +206,8 @@ class MainWindow(Adw.ApplicationWindow):
         self.filtered_packages: list[PackageStats] = []
         self._from_cache = False
         self._cache_age = 0
+        self._loaded_key = None
+        self._load_generation = 0
         self._heatmap_mode = False
 
         # Detect system language
@@ -695,7 +697,8 @@ class MainWindow(Adw.ApplicationWindow):
             developers=["Daniel Nylander <daniel@danielnylander.se>"],
             copyright="© 2026 Daniel Nylander",
             license_type=Gtk.License.GPL_3_0,
-            website="https://github.com/yeager/ubuntu-l10n",
+            website="https://www.danielnylander.se",
+            support_url="https://github.com/yeager/ubuntu-l10n",
             issue_url="https://github.com/yeager/ubuntu-l10n/issues",
             comments=_("View Ubuntu translation statistics from Launchpad"),
             translator_credits=_("Translate this app: https://www.transifex.com/danielnylander/ubuntu-l10n/"),
@@ -705,11 +708,15 @@ class MainWindow(Adw.ApplicationWindow):
         about.present(self)
 
     def _load_data(self, force=False):
+        self._load_generation += 1
+        generation = self._load_generation
+        data_key = (self._current_distro, self._current_lang)
+        cache_state = {"fresh": False}
         self._spinner.start()
         self._stack.set_visible_child_name("loading")
         self._loading_label.set_text(_("Loading translations…"))
-        distro = self._current_distro
-        lang = self._current_lang
+        self._last_update_label.set_text("")
+        distro, lang = data_key
 
         self._title_widget.set_subtitle(
             f"{distro.capitalize()} · {LANGUAGES.get(lang, lang)}"
@@ -717,13 +724,15 @@ class MainWindow(Adw.ApplicationWindow):
 
         def progress_cb(loaded, total):
             GLib.idle_add(
-                self._loading_label.set_text,
-                _("Loading… {loaded}/{total} templates").format(
-                    loaded=loaded, total=total)
+                self._show_load_progress, generation, loaded, total,
             )
 
         def cache_cb(packages, age_minutes):
-            GLib.idle_add(self._on_data_loaded, packages, True, age_minutes)
+            cache_state["fresh"] = age_minutes < 60
+            GLib.idle_add(
+                self._on_data_loaded, packages, True, age_minutes,
+                generation, data_key,
+            )
 
         def worker():
             try:
@@ -733,12 +742,26 @@ class MainWindow(Adw.ApplicationWindow):
                     cache_cb=None if force else cache_cb,
                     force=force,
                 )
-                GLib.idle_add(self._on_data_loaded, packages, False, 0)
+                if not cache_state["fresh"]:
+                    GLib.idle_add(
+                        self._on_data_loaded, packages, False, 0,
+                        generation, data_key,
+                    )
             except Exception as e:
-                GLib.idle_add(self._on_data_error, str(e))
+                GLib.idle_add(self._on_data_error, str(e), generation, data_key)
 
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
+
+    def _show_load_progress(self, generation: int, loaded: int, total: int):
+        if generation != self._load_generation:
+            return GLib.SOURCE_REMOVE
+        self._loading_label.set_text(
+            _("Loading… {loaded}/{total} templates").format(
+                loaded=loaded, total=total,
+            ),
+        )
+        return GLib.SOURCE_REMOVE
 
     def _on_heatmap_toggled(self, btn):
         self._heatmap_mode = btn.get_active()
@@ -746,10 +769,16 @@ class MainWindow(Adw.ApplicationWindow):
             self._filter_and_display()
 
     def _on_data_loaded(self, packages: list[PackageStats],
-                        from_cache: bool = False, age_minutes: int = 0):
+                        from_cache: bool = False, age_minutes: int = 0,
+                        generation: int | None = None,
+                        data_key: tuple[str, str] | None = None):
+        if generation is not None and generation != self._load_generation:
+            return GLib.SOURCE_REMOVE
         self._spinner.stop()
         self._update_last_updated()
         self.packages = packages
+        if data_key is not None:
+            self._loaded_key = data_key
         self._from_cache = from_cache
         self._cache_age = age_minutes
         # Notify about low translations
@@ -766,9 +795,39 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             self._stack.set_visible_child_name("content")
 
-    def _on_data_error(self, error: str):
+    def _on_data_error(self, error: str,
+                       generation: int | None = None,
+                       data_key: tuple[str, str] | None = None):
+        if generation is not None and generation != self._load_generation:
+            return GLib.SOURCE_REMOVE
         self._spinner.stop()
-        self._loading_label.set_text(_("Error: {error}").format(error=error))
+        if self.packages and data_key is not None and self._loaded_key == data_key:
+            message = _(
+                "Could not refresh Launchpad. The last results are still "
+                "visible. Check your connection and select Refresh data to "
+                "try again."
+            )
+            self._last_update_label.set_text(message)
+            self._stack.set_visible_child_name(
+                "heatmap" if self._heatmap_mode else "content",
+            )
+            status_widget = self._last_update_label
+        else:
+            message = _(
+                "Could not load translation data from Launchpad. Check your "
+                "internet connection, then select Refresh data to try again."
+            )
+            self._loading_label.set_text(message)
+            self._stack.set_visible_child_name("loading")
+            status_widget = self._loading_label
+        self.announce_to_screen_reader(status_widget, message)
+        return GLib.SOURCE_REMOVE
+
+    def announce_to_screen_reader(self, widget, message):
+        if hasattr(Gtk.Accessible, "announce"):
+            Gtk.Accessible.announce(
+                widget, message, Gtk.AccessibleAnnouncementPriority.MEDIUM,
+            )
 
     def _filter_and_display(self):
         query = self._search.get_text().lower().strip()
