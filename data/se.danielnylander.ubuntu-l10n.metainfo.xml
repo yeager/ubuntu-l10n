@@ -35,6 +35,12 @@
     <keyword>Ubuntu</keyword>
   </keywords>
   <releases>
+    <release version="0.3.13" date="2026-10-30">
+      <description>
+        <p>Continue first-run setup when preferences cannot be saved, and cancel outdated Launchpad requests when a newer search starts.</p>
+        <p xml:lang="sv">Fortsätt konfigureringen även om inställningarna inte kan sparas. Avbryt äldre Launchpad-förfrågningar när en ny sökning startar.</p>
+      </description>
+    </release>
     <release version="0.3.12" date="2026-10-30">
       <description>
         <p>Improve notification preference storage and validate translation links before opening them.</p>

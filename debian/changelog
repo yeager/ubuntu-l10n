@@ -1,3 +1,10 @@
+ubuntu-l10n (0.3.13-1) noble; urgency=medium
+
+  * Continue first-run setup when preferences cannot be saved.
+  * Cancel outdated Launchpad requests when a newer search starts.
+
+ -- Daniel Nylander <daniel@danielnylander.se>  Fri, 30 Oct 2026 18:30:00 +0100
+
 ubuntu-l10n (0.3.12-1) noble; urgency=medium
 
   * Store notification preferences separately and handle malformed data.
