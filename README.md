@@ -36,6 +36,11 @@ sudo apt install ./ubuntu-l10n_*_all.deb
 The Danne L10n Suite APT repository also provides Ubuntu L10n, though its index
 may lag behind the latest GitHub release. To enable it:
 
+The repository key's primary fingerprint is
+`7CEE83C9C621B18667DD1BFECAED4975DAB053A8`. After downloading the key, check
+it with `gpg --show-keys --with-fingerprint /tmp/yeager-repo-key.asc` before
+installing it.
+
 ```bash
 wget -qO /tmp/yeager-repo-key.asc https://yeager.github.io/debian-repo/yeager-repo-key.asc
 sudo install -m 0644 /tmp/yeager-repo-key.asc /usr/share/keyrings/yeager-repo.asc
