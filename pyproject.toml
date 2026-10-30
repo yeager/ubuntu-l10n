@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77.0.0", "setuptools-scm"]
+requires = ["setuptools>=68.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,8 +7,7 @@ name = "ubuntu-l10n"
 version = "0.3.12"
 description = "Ubuntu/Launchpad translation statistics viewer"
 readme = "README.md"
-license = "GPL-3.0-or-later"
-license-files = ["LICENSE"]
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
 classifiers = [
 ]
