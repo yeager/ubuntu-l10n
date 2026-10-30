@@ -35,6 +35,12 @@
     <keyword>Ubuntu</keyword>
   </keywords>
   <releases>
+    <release version="0.3.12" date="2026-10-30">
+      <description>
+        <p>Improve notification preference storage and validate translation links before opening them.</p>
+        <p xml:lang="sv">Förbättra lagringen av aviseringsval och kontrollera översättningslänkar innan de öppnas.</p>
+      </description>
+    </release>
     <release version="0.3.11" date="2026-10-30">
       <description>
         <p>Fix Swedish launcher metadata and include the application icon in Debian packages. Verify package contents and restrict publishing to matching version tags.</p>

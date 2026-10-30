@@ -1,3 +1,11 @@
+ubuntu-l10n (0.3.12-1) noble; urgency=medium
+
+  * Store notification preferences separately and handle malformed data.
+  * Validate Launchpad translation links before displaying them.
+  * Use SPDX license metadata supported by current setuptools.
+
+ -- Daniel Nylander <daniel@danielnylander.se>  Fri, 30 Oct 2026 16:30:00 +0100
+
 ubuntu-l10n (0.3.11-1) noble; urgency=medium
 
   * Correct Swedish launcher metadata and install the application icon.

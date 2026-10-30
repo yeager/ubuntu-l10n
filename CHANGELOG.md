@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.12 — 2026-10-30
+
+- Save notification preferences to their own configuration file and tolerate malformed data.
+- Validate Launchpad links before showing them.
+- Modernize SPDX license metadata for current setuptools.
+
+
 ## 0.3.11 — 2026-10-30
 
 - Correct the Swedish launcher metadata and include the application icon in Debian packages.
