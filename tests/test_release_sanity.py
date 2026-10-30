@@ -12,7 +12,7 @@ from ubuntu_l10n.scraper import DISTRO_VERSIONS, EOL_DISTROS
 class ReleaseSanityTests(unittest.TestCase):
     def test_apt_repository_instructions_include_the_primary_key_fingerprint_check(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("7CEE83C9C621B18667DD1BFECAED4975DAB053A8", readme)
+        self.assertIn("A387E4E726298FDA9599A4ACA689083BF25B5D38", readme)
         self.assertIn(
             "gpg --show-keys --with-fingerprint /tmp/yeager-repo-key.asc", readme,
         )
