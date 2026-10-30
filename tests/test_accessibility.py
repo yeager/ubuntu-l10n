@@ -256,6 +256,30 @@ class DataLoadStateTests(unittest.TestCase):
             "Senast uppdaterad: 2026-10-29 12:30",
         )
 
+    def test_cached_results_do_not_claim_a_fresh_update_time(self):
+        window = Mock()
+        window._load_generation = 3
+        window._heatmap_mode = False
+        with patch.object(MainWindow, "_filter_and_display"):
+            MainWindow._on_data_loaded(
+                window, [], from_cache=True, age_minutes=45, generation=3,
+            )
+
+        window._last_update_label.set_text.assert_called_once_with("")
+        window._update_last_updated.assert_not_called()
+
+    def test_fresh_results_show_the_update_time(self):
+        window = Mock()
+        window._load_generation = 3
+        window._heatmap_mode = False
+        with patch.object(MainWindow, "_filter_and_display"):
+            MainWindow._on_data_loaded(
+                window, [], from_cache=False, generation=3,
+            )
+
+        window._update_last_updated.assert_called_once_with()
+        window._last_update_label.set_text.assert_not_called()
+
     def test_ignores_errors_from_an_outdated_selection(self):
         window = Mock()
         window._load_generation = 3

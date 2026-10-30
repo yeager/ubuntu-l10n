@@ -828,7 +828,12 @@ class MainWindow(Adw.ApplicationWindow):
         if generation is not None and generation != self._load_generation:
             return GLib.SOURCE_REMOVE
         self._spinner.stop()
-        self._update_last_updated()
+        if from_cache:
+            # The timestamp below is a cache age, not the time we just loaded it.
+            # Keep the summary's explicit "Cached (… min ago)" status authoritative.
+            self._last_update_label.set_text("")
+        else:
+            self._update_last_updated()
         self.packages = packages
         if data_key is not None:
             self._loaded_key = data_key
