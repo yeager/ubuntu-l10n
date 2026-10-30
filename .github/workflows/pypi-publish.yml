@@ -39,12 +39,16 @@ jobs:
           wheel, = Path("dist").glob("*.whl")
           sdist, = Path("dist").glob("*.tar.gz")
           wheel_catalogue = "ubuntu_l10n/locale/sv/LC_MESSAGES/ubuntu-l10n.mo"
+          language_helper = "ubuntu_l10n/system_language.py"
           metainfo_name = "se.danielnylander.ubuntu-l10n.metainfo.xml"
           with ZipFile(wheel) as archive:
               assert wheel_catalogue in archive.namelist(), "Swedish catalogue missing from wheel"
+              assert language_helper in archive.namelist(), "Locale helper missing from wheel"
           with open_tar(sdist, "r:gz") as archive:
               assert any(member.name.endswith("/" + wheel_catalogue) for member in archive.getmembers()), \
                   "Swedish catalogue missing from source distribution"
+              assert any(member.name.endswith("/" + language_helper) for member in archive.getmembers()), \
+                  "Locale helper missing from source distribution"
               assert any(member.name.endswith("/data/" + metainfo_name) for member in archive.getmembers()), \
                   "AppStream metadata missing from source distribution"
           PY
