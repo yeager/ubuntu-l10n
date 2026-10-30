@@ -35,6 +35,12 @@
     <keyword>Ubuntu</keyword>
   </keywords>
   <releases>
+    <release version="0.3.14" date="2026-10-30">
+      <description>
+        <p>Prevent spreadsheet formulas from running in CSV exports.</p>
+        <p xml:lang="sv">Förhindra att kalkylbladsformler körs från CSV-exporter.</p>
+      </description>
+    </release>
     <release version="0.3.13" date="2026-10-30">
       <description>
         <p>Continue first-run setup when preferences cannot be saved, and cancel outdated Launchpad requests when a newer search starts.</p>
