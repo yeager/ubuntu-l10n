@@ -16,6 +16,7 @@ class ReleaseSanityTests(unittest.TestCase):
         self.assertIn(
             "gpg --show-keys --with-fingerprint /tmp/yeager-repo-key.asc", readme,
         )
+        self.assertIn("https://yeager.github.io/debian-repo stable main", readme)
 
     def test_python_sources_do_not_call_locale_bindtextdomain(self):
         for path in ROOT.rglob("*.py"):
