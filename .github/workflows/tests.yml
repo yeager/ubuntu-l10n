@@ -52,7 +52,9 @@ jobs:
             python3-build python3-setuptools-scm \
             python3-all python3-setuptools pybuild-plugin-pyproject
       - name: Compile translations
-        run: python3 scripts/compile-translations.py
+        run: |
+          msgcmp po/sv.po po/ubuntu-l10n.pot
+          python3 scripts/compile-translations.py
       - name: Generate translated desktop entry
         run: python3 desktop-merge.py se.danielnylander.ubuntu-l10n.desktop.in po/ se.danielnylander.ubuntu-l10n.desktop
       - name: Build and inspect Debian package

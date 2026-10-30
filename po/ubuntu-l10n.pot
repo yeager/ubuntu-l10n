@@ -252,6 +252,11 @@ msgstr ""
 msgid "Cached ({age} min ago)"
 msgstr ""
 
+#: ubuntu_l10n/app.py:728
+#, python-brace-format
+msgid "Error: {error}"
+msgstr ""
+
 #: ubuntu_l10n/app.py:957
 msgid "General"
 msgstr ""
@@ -264,4 +269,12 @@ msgstr ""
 #: ubuntu_l10n/app.py:56
 #, python-brace-format
 msgid "{release} — standard support ended; ESM via Ubuntu Pro"
+msgstr ""
+
+#: se.danielnylander.ubuntu-l10n.desktop.in
+msgid "Ubuntu/Launchpad translation statistics viewer"
+msgstr ""
+
+#: se.danielnylander.ubuntu-l10n.desktop.in
+msgid "translation;localization;ubuntu;launchpad;l10n;"
 msgstr ""

@@ -245,3 +245,47 @@ msgstr "{release} — supporten har upphört"
 #, python-brace-format
 msgid "{release} — standard support ended; ESM via Ubuntu Pro"
 msgstr "{release} — ordinarie support har upphört; ESM via Ubuntu Pro"
+
+#: ubuntu_l10n/app.py
+msgid "Quit"
+msgstr "Avsluta"
+
+#: ubuntu_l10n/app.py
+msgid "Keyboard shortcuts"
+msgstr "Kortkommandon"
+
+#: ubuntu_l10n/app.py
+msgid "Increase text size"
+msgstr "Öka textstorleken"
+
+#: ubuntu_l10n/app.py
+msgid "Decrease text size"
+msgstr "Minska textstorleken"
+
+#: ubuntu_l10n/app.py
+msgid "Reset text size"
+msgstr "Återställ textstorleken"
+
+#: ubuntu_l10n/app.py
+msgid "Toggle high-contrast styling"
+msgstr "Växla högkontrastläge"
+
+#: ubuntu_l10n/app.py
+msgid "Could not refresh Launchpad. Showing saved data from {age} minutes ago. Check your connection and try Refresh again."
+msgstr "Det gick inte att uppdatera Launchpad. Visar sparade data från {age} minuter sedan. Kontrollera anslutningen och försök uppdatera igen."
+
+#: ubuntu_l10n/app.py
+msgid "Could not load translation data from Launchpad. Check your internet connection, then select Refresh data to try again."
+msgstr "Det gick inte att läsa in översättningsdata från Launchpad. Kontrollera internetanslutningen och välj sedan Uppdatera data för att försöka igen."
+
+#: ubuntu_l10n/app.py
+msgid "General"
+msgstr "Allmänt"
+
+#: se.danielnylander.ubuntu-l10n.desktop.in
+msgid "Ubuntu/Launchpad translation statistics viewer"
+msgstr "Visare för översättningsstatistik för Ubuntu och Launchpad"
+
+#: se.danielnylander.ubuntu-l10n.desktop.in
+msgid "translation;localization;ubuntu;launchpad;l10n;"
+msgstr "översättning;lokalisering;ubuntu;launchpad;l10n;"

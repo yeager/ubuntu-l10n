@@ -43,6 +43,14 @@ class ReleaseSanityTests(unittest.TestCase):
         self.assertIn('RELEASE_TAG: ${{ github.ref_name }}', workflow)
         self.assertIn('assert tag_version == project_version', workflow)
 
+    def test_debian_and_release_builds_check_swedish_catalogue_against_pot(self):
+        for workflow_path in (
+            ".github/workflows/tests.yml",
+            ".github/workflows/release.yml",
+        ):
+            workflow = (ROOT / workflow_path).read_text(encoding="utf-8")
+            self.assertIn("msgcmp po/sv.po po/ubuntu-l10n.pot", workflow)
+
     def test_appstream_metadata_matches_app_id_and_release(self):
         metainfo = ET.parse(ROOT / "data" / "se.danielnylander.ubuntu-l10n.metainfo.xml").getroot()
         self.assertEqual(metainfo.findtext("id"), "se.danielnylander.ubuntu-l10n")

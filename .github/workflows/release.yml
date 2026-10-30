@@ -21,7 +21,9 @@ jobs:
         run: sudo apt-get install -y appstream gettext
 
       - name: Compile translations
-        run: python3 scripts/compile-translations.py
+        run: |
+          msgcmp po/sv.po po/ubuntu-l10n.pot
+          python3 scripts/compile-translations.py
 
       - name: Generate translated .desktop file
         run: |
