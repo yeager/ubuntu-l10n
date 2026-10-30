@@ -4,7 +4,6 @@ import csv
 from datetime import datetime as _dt_now
 import gettext
 import json
-import locale
 import platform as _platform
 import sys
 import threading
@@ -32,6 +31,7 @@ from .scraper import (  # noqa: E402
 from .accessibility import (  # noqa: E402
     AccessibilityManager, associate_mnemonic, set_accessible_label,
 )
+from .system_language import get_system_language  # noqa: E402
 from . import __version__  # noqa: E402
 
 # i18n setup
@@ -94,23 +94,6 @@ def _heatmap_css_class(pct):
     return "heatmap-gray"
 APP_ID = "se.danielnylander.ubuntu-l10n"
 FIRST_RUN_KEY = "first_run_done"
-
-
-def get_system_language() -> str:
-    """Detect system language code."""
-    try:
-        loc = locale.getlocale()[0]  # e.g. 'sv_SE'
-        if loc:
-            # Try exact match first
-            if loc in LANGUAGES:
-                return loc
-            code = loc.split("_")[0]
-            if code in LANGUAGES:
-                return code
-    except Exception:
-        pass
-    return "sv"
-
 
 
 _NOTIFY_APP = "ubuntu-l10n"
@@ -225,7 +208,7 @@ class MainWindow(Adw.ApplicationWindow):
         self._heatmap_mode = False
 
         # Detect system language
-        sys_lang = get_system_language()
+        sys_lang = get_system_language(LANGUAGES)
 
         # Main layout
         toolbar_view = Adw.ToolbarView()
