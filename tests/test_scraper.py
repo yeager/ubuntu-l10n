@@ -29,7 +29,7 @@ class JsonStorageTests(unittest.TestCase):
 
     def test_cache_round_trip_and_corrupt_cache_recovery(self):
         with patch.object(scraper, "CACHE_FILE", self.cache_file):
-            scraper.save_cache("noble", "sv", [{"name": "example"}])
+            self.assertTrue(scraper.save_cache("noble", "sv", [{"name": "example"}]))
             data, timestamp = scraper.load_cache("noble", "sv")
             self.assertEqual(data, [{"name": "example"}])
             self.assertIsInstance(timestamp, float)
@@ -40,6 +40,17 @@ class JsonStorageTests(unittest.TestCase):
             self.assertEqual(scraper.load_cache("noble", "sv"), (None, None))
             scraper.save_cache("noble", "sv", [])
             self.assertEqual(json.loads(self.cache_file.read_text(encoding="utf-8"))["noble_sv"]["data"], [])
+
+    def test_cache_write_failure_is_reported_without_raising(self):
+        with (
+            patch.object(scraper, "CACHE_FILE", self.cache_file),
+            patch.object(scraper, "CACHE_DIR", self.cache_file.parent),
+            patch.object(scraper, "_atomic_write_json", side_effect=PermissionError("read-only")),
+            self.assertLogs(scraper.__name__, level="WARNING") as logs,
+        ):
+            self.assertFalse(scraper.save_cache("noble", "sv", [{"name": "example"}]))
+
+        self.assertIn("Could not save Launchpad translation cache", logs.output[0])
 
     def test_cache_rejects_invalid_timestamps(self):
         invalid_timestamps = ("bad", True, float("nan"), float("inf"), -1)
@@ -204,6 +215,28 @@ class LaunchpadPaginationTests(unittest.TestCase):
         cache_callback.assert_not_called()
         request.assert_called_once()
         save_cache.assert_called_once_with("noble", "sv", [])
+
+    def test_successful_fetch_is_returned_when_cache_cannot_be_written(self):
+        package, _cached_data = self._cached_package()
+        session = Mock()
+        session.headers = {}
+        response = Mock(text="one result")
+
+        with tempfile.TemporaryDirectory() as directory:
+            cache_file = Path(directory) / "cache" / "cache.json"
+            with (
+                patch.object(scraper.requests, "Session", return_value=session),
+                patch.object(scraper, "_request_with_retry", return_value=response),
+                patch.object(scraper, "get_total_count", return_value=1),
+                patch.object(scraper, "parse_page", return_value=[package]),
+                patch.object(scraper, "CACHE_FILE", cache_file),
+                patch.object(scraper, "CACHE_DIR", cache_file.parent),
+                patch.object(scraper, "_atomic_write_json", side_effect=PermissionError("read-only")),
+                self.assertLogs(scraper.__name__, level="WARNING"),
+            ):
+                result = scraper.fetch_all_packages("noble", "sv", force=True)
+
+        self.assertEqual(result, [package])
 
     def test_emits_stale_cache_before_reporting_network_failure(self):
         cached_data = [{

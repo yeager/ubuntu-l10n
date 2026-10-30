@@ -1,6 +1,7 @@
 """Scrape translation statistics from Launchpad with caching and rate limiting."""
 
 import json
+import logging
 import math
 import os
 import re
@@ -23,6 +24,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 
 REQUEST_DELAY = 0.8  # seconds between requests
 _CACHE_WRITE_LOCK = threading.Lock()
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -162,11 +164,11 @@ def load_cache(distro: str, lang: str) -> tuple[list | None, float | None]:
     return None, None
 
 
-def save_cache(distro: str, lang: str, data: list[dict]):
-    """Save data to cache with current timestamp."""
+def save_cache(distro: str, lang: str, data: list[dict]) -> bool:
+    """Save data to cache with current timestamp, returning whether it worked."""
     with _CACHE_WRITE_LOCK:
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
         try:
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
             cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
             if not isinstance(cache, dict):
                 cache = {}
@@ -176,7 +178,12 @@ def save_cache(distro: str, lang: str, data: list[dict]):
             "data": data,
             "timestamp": time.time(),
         }
-        _atomic_write_json(CACHE_FILE, cache)
+        try:
+            _atomic_write_json(CACHE_FILE, cache)
+        except OSError:
+            _LOGGER.warning("Could not save Launchpad translation cache")
+            return False
+        return True
 
 
 def _request_with_retry(session: requests.Session, url: str,
