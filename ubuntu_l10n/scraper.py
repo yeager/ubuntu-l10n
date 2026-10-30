@@ -146,7 +146,7 @@ def _cache_key(distro: str, lang: str) -> str:
 def load_cache(distro: str, lang: str) -> tuple[list | None, float | None]:
     """Load cached data. Returns (data, timestamp) or (None, None)."""
     try:
-        cache = json.loads(CACHE_FILE.read_text())
+        cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
         key = _cache_key(distro, lang)
         if key in cache:
             entry = cache[key]
@@ -159,7 +159,7 @@ def load_cache(distro: str, lang: str) -> tuple[list | None, float | None]:
                         timestamp = None
                     if timestamp is not None and math.isfinite(timestamp) and timestamp >= 0:
                         return entry["data"], timestamp
-    except (OSError, json.JSONDecodeError, TypeError, AttributeError):
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, AttributeError):
         pass
     return None, None
 
@@ -172,7 +172,7 @@ def save_cache(distro: str, lang: str, data: list[dict]) -> bool:
             cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
             if not isinstance(cache, dict):
                 cache = {}
-        except (OSError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError):
             cache = {}
         cache[_cache_key(distro, lang)] = {
             "data": data,

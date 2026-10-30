@@ -41,6 +41,19 @@ class JsonStorageTests(unittest.TestCase):
             scraper.save_cache("noble", "sv", [])
             self.assertEqual(json.loads(self.cache_file.read_text(encoding="utf-8"))["noble_sv"]["data"], [])
 
+    def test_cache_recovers_from_invalid_utf8(self):
+        with patch.object(scraper, "CACHE_FILE", self.cache_file):
+            self.cache_file.parent.mkdir(parents=True)
+            self.cache_file.write_bytes(b"\xff\xfe")
+
+            self.assertEqual(scraper.load_cache("noble", "sv"), (None, None))
+            self.assertTrue(scraper.save_cache("noble", "sv", [{"name": "Swedish"}]))
+
+            self.assertEqual(
+                scraper.load_cache("noble", "sv")[0],
+                [{"name": "Swedish"}],
+            )
+
     def test_cache_write_failure_is_reported_without_raising(self):
         with (
             patch.object(scraper, "CACHE_FILE", self.cache_file),
