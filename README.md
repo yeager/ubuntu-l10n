@@ -37,8 +37,10 @@ The Danne L10n Suite APT repository also provides Ubuntu L10n, though its index
 may lag behind the latest GitHub release. To enable it:
 
 APT metadata now uses the replacement signing key with fingerprint
-`C7982569D1DCC5468A072D94D7B45ED27B9EBB63`. <!-- gitleaks:allow --> The previous key is retired. Existing users must install the new key before
-running `sudo apt update`.
+`C7982569D1DCC5468A072D94D7B45ED27B9EBB63`. <!-- gitleaks:allow --> The previous key is retired. Verify the downloaded key with
+`gpg --show-keys --with-fingerprint /tmp/yeager-repo-key.asc` and confirm its
+fingerprint before installing it. Existing users must install the new key
+before running `sudo apt update`.
 
 ```bash
 wget -qO /tmp/yeager-repo-key.asc https://yeager.github.io/debian-repo/yeager-repo-key.asc
