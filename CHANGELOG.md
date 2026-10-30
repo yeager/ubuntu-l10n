@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.11 — 2026-10-30
+
+- Correct the Swedish launcher metadata and include the application icon in Debian packages.
+- Verify package contents and restrict release and PyPI publishing to matching version tags.
+
 ## 0.3.10 — 2026-10-30
 
 - Select the default translation language from `LANGUAGE`, `LC_ALL`, `LC_MESSAGES` and `LANG`.

@@ -1,3 +1,3 @@
 """Ubuntu/Launchpad translation statistics viewer."""
 
-__version__ = "0.3.10"
+__version__ = "0.3.11"
