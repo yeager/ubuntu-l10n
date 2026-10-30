@@ -24,6 +24,7 @@ except (ValueError, ImportError):
 from gi.repository import Gtk, Adw, GLib, Gio, Pango, Gdk  # noqa: E402
 
 from .package_filter import filter_and_sort_packages  # noqa: E402
+from .export_helper import csv_safe_value  # noqa: E402
 from .scraper import (  # noqa: E402
     fetch_all_packages, FetchCancelled, PackageStats,
     DISTRO_VERSIONS, EOL_DISTROS, ESM_DISTROS, LANGUAGES,
@@ -631,7 +632,7 @@ class MainWindow(Adw.ApplicationWindow):
             with open(path, "w", newline="", encoding="utf-8") as f:
                 w = csv.DictWriter(f, fieldnames=data[0].keys())
                 w.writeheader()
-                w.writerows(data)
+                w.writerows({key: csv_safe_value(value) for key, value in row.items()} for row in data)
         else:
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
