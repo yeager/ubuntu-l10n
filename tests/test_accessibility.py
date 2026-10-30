@@ -156,6 +156,18 @@ class AccessibilityManagerTests(unittest.TestCase):
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
 class DataLoadStateTests(unittest.TestCase):
+    def test_selector_change_saves_preferences_before_loading(self):
+        for callback in (MainWindow._on_distro_changed, MainWindow._on_lang_changed):
+            with self.subTest(callback=callback.__name__):
+                window = Mock()
+                window._save_selection = Mock()
+                window._load_data = Mock()
+
+                callback(window, None, None)
+
+                window._save_selection.assert_called_once_with()
+                window._load_data.assert_called_once_with()
+
     def test_language_change_saves_both_current_selectors(self):
         window = Mock()
         window._current_distro = "noble"
@@ -171,6 +183,19 @@ class DataLoadStateTests(unittest.TestCase):
             "distro": "noble",
             "language": "sv",
         })
+
+    def test_selection_save_failure_is_logged_without_raising(self):
+        window = Mock()
+        window._current_distro = "noble"
+        window._current_lang = "sv"
+        with (
+            patch.object(app_module, "load_config", return_value={}),
+            patch.object(app_module, "save_config", side_effect=OSError("read-only")),
+            self.assertLogs("ubuntu_l10n.app", level="WARNING") as logs,
+        ):
+            MainWindow._save_selection(window)
+
+        self.assertIn("Could not save selected Ubuntu release and language", logs.output[0])
 
     def test_last_updated_uses_the_translated_label(self):
         window = Mock()
