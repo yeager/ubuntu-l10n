@@ -143,16 +143,17 @@ def _notify_config_path():
 
 
 def _load_notify_config():
+    """Load notification preferences, falling back to enabled on invalid data."""
     try:
-        return json.loads(_notify_config_path().read_text())
-    except Exception:
+        config = json.loads(_notify_config_path().read_text(encoding="utf-8"))
+        return config if isinstance(config, dict) else {"enabled": True}
+    except (OSError, json.JSONDecodeError):
         return {"enabled": True}
 
 
 def _save_notify_config(config):
-    p = _notify_config_path()
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(config))
+    """Save notification preferences through the shared atomic config writer."""
+    save_config(config)
 
 
 def _send_notification(summary, body="", icon="dialog-information"):

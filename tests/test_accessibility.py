@@ -202,6 +202,24 @@ class AccessibilityManagerTests(unittest.TestCase):
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
 class DataLoadStateTests(unittest.TestCase):
+    def test_notification_config_accepts_only_json_objects(self):
+        with patch.object(app_module, "_notify_config_path") as config_path:
+            config_path.return_value.read_text.return_value = '{"enabled": false}'
+            self.assertEqual(app_module._load_notify_config(), {"enabled": False})
+
+            config_path.return_value.read_text.return_value = "[]"
+            self.assertEqual(app_module._load_notify_config(), {"enabled": True})
+
+            config_path.return_value.read_text.side_effect = OSError("unavailable")
+            self.assertEqual(app_module._load_notify_config(), {"enabled": True})
+
+    def test_notification_preferences_use_atomic_config_writer(self):
+        preferences = {"enabled": False}
+        with patch.object(app_module, "save_config") as save_config:
+            app_module._save_notify_config(preferences)
+
+        save_config.assert_called_once_with(preferences)
+
     def test_selector_change_saves_preferences_before_loading(self):
         for callback in (MainWindow._on_distro_changed, MainWindow._on_lang_changed):
             with self.subTest(callback=callback.__name__):
