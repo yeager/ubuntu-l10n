@@ -48,7 +48,7 @@ jobs:
       - name: Install Debian packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gettext dpkg-dev debhelper dh-python \
+          sudo apt-get install -y appstream build-essential gettext dpkg-dev debhelper dh-python \
             python3-build python3-setuptools-scm \
             python3-all python3-setuptools pybuild-plugin-pyproject
       - name: Compile translations
@@ -58,6 +58,7 @@ jobs:
       - name: Build and inspect Debian package
         run: |
           set -euo pipefail
+          appstreamcli validate data/se.danielnylander.ubuntu-l10n.metainfo.xml
           VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
           bash scripts/build-deb.sh build/test-package "$VERSION"
           PACKAGE="build/test-package/ubuntu-l10n_${VERSION}-1_all.deb"
@@ -66,6 +67,7 @@ jobs:
           CONTENTS=$(dpkg-deb --contents "$PACKAGE")
           grep -Fq './usr/bin/ubuntu-l10n' <<<"$CONTENTS"
           grep -Fq './usr/share/applications/se.danielnylander.ubuntu-l10n.desktop' <<<"$CONTENTS"
+          grep -Fq './usr/share/metainfo/se.danielnylander.ubuntu-l10n.metainfo.xml' <<<"$CONTENTS"
           grep -Fq './usr/share/icons/hicolor/scalable/apps/ubuntu-l10n.svg' <<<"$CONTENTS"
           grep -Fq './usr/share/locale/sv/LC_MESSAGES/ubuntu-l10n.mo' <<<"$CONTENTS"
           DEPENDS=$(dpkg-deb --field "$PACKAGE" Depends)
@@ -79,3 +81,4 @@ jobs:
           PACKAGE=$(find .. -maxdepth 1 -type f -name 'ubuntu-l10n_*_all.deb' -print -quit)
           test -n "$PACKAGE"
           dpkg-deb --contents "$PACKAGE" | grep -Fq 'ubuntu_l10n/locale/sv/LC_MESSAGES/ubuntu-l10n.mo'
+          dpkg-deb --contents "$PACKAGE" | grep -Fq 'usr/share/metainfo/se.danielnylander.ubuntu-l10n.metainfo.xml'

@@ -1,6 +1,7 @@
 import re
 import unittest
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,6 +25,27 @@ class ReleaseSanityTests(unittest.TestCase):
         self.assertIsNotNone(metadata_version)
         self.assertIsNotNone(source_version)
         self.assertEqual(metadata_version.group(1), source_version.group(1))
+
+    def test_appstream_metadata_matches_app_id_and_release(self):
+        metainfo = ET.parse(ROOT / "data" / "se.danielnylander.ubuntu-l10n.metainfo.xml").getroot()
+        self.assertEqual(metainfo.findtext("id"), "se.danielnylander.ubuntu-l10n")
+        project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        version = re.search(r'(?m)^version\s*=\s*["\']([^"\']+)', project).group(1)
+        self.assertEqual(metainfo.find("releases/release").get("version"), version)
+        self.assertEqual(
+            metainfo.findtext("launchable"),
+            "se.danielnylander.ubuntu-l10n.desktop",
+        )
+        xml_lang = "{http://www.w3.org/XML/1998/namespace}lang"
+        self.assertIn(
+            "Visa översättningsstatus för Ubuntu och Launchpad",
+            [summary.text for summary in metainfo.findall("summary")
+             if summary.get(xml_lang) == "sv"],
+        )
+        self.assertTrue(any(
+            paragraph.get(xml_lang) == "sv"
+            for paragraph in metainfo.findall("description/p")
+        ))
 
     def test_release_list_includes_current_lts_and_marks_interim_eol(self):
         self.assertEqual(DISTRO_VERSIONS["stonking"], "26.10")

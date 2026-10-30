@@ -1,16 +1,16 @@
 [build-system]
-requires = ["setuptools>=68.0", "setuptools-scm"]
+requires = ["setuptools>=77.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ubuntu-l10n"
-version = "0.3.8"
+version = "0.3.9"
 description = "Ubuntu/Launchpad translation statistics viewer"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
 authors = [
     { name = "Daniel Nylander", email = "daniel@danielnylander.se" },

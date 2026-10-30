@@ -22,6 +22,7 @@ mkdir -p \
     "$PACKAGE_DIR/usr/lib/python3/dist-packages/ubuntu_l10n" \
     "$PACKAGE_DIR/usr/bin" \
     "$PACKAGE_DIR/usr/share/applications" \
+    "$PACKAGE_DIR/usr/share/metainfo" \
     "$PACKAGE_DIR/usr/share/icons/hicolor/scalable/apps" \
     "$PACKAGE_DIR/DEBIAN"
 
@@ -37,6 +38,8 @@ done
 
 cp "$ROOT_DIR/se.danielnylander.ubuntu-l10n.desktop" \
     "$PACKAGE_DIR/usr/share/applications/"
+cp "$ROOT_DIR/data/se.danielnylander.ubuntu-l10n.metainfo.xml" \
+    "$PACKAGE_DIR/usr/share/metainfo/"
 cp "$ROOT_DIR/data/icons/ubuntu-l10n.svg" \
     "$PACKAGE_DIR/usr/share/icons/hicolor/scalable/apps/"
 

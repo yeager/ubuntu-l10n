@@ -26,6 +26,9 @@ the installed app follows the desktop language when available.
 sudo apt install ubuntu-l10n
 ```
 
+The Debian package includes AppStream metadata with English and Swedish
+descriptions for GNOME Software.
+
 ### Fedora/RPM
 ```bash
 sudo dnf install ubuntu-l10n

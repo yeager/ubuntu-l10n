@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.9 — 2026-10-30
+
+- Add AppStream metadata for GNOME Software integration
+- Provide English and Swedish app descriptions to software catalogs
+
 ## 0.3.8 — 2026-10-29
 
 - Include compiled translations in PyPI and Debian source builds

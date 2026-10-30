@@ -1,2 +1,3 @@
 recursive-include ubuntu_l10n/locale *.mo
+include data/se.danielnylander.ubuntu-l10n.metainfo.xml
 global-exclude *.bak
