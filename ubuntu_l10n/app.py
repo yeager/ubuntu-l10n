@@ -162,6 +162,7 @@ class PackageRow(Gtk.Box):
         progress.set_fraction(pkg.translated_pct / 100.0)
         progress.set_hexpand(True)
         progress.set_valign(Gtk.Align.CENTER)
+        set_accessible_label(progress, f"{pkg.name}: {_('Translation Statistics')}")
         if pkg.translated_pct >= 100:
             progress.add_css_class("success")
         elif pkg.translated_pct >= 80:

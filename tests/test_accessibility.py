@@ -13,7 +13,7 @@ if Adw is not None:
     from ubuntu_l10n.accessibility import (
         AccessibilityManager, associate_mnemonic, set_accessible_label,
     )
-    from ubuntu_l10n.app import MainWindow, SHORTCUTS
+    from ubuntu_l10n.app import MainWindow, PackageRow, SHORTCUTS
     from ubuntu_l10n import app as app_module
     from ubuntu_l10n.scraper import DISTRO_VERSIONS, EOL_DISTROS, ESM_DISTROS
 else:
@@ -62,6 +62,20 @@ class AccessibilityManagerTests(unittest.TestCase):
         button.update_property.assert_called_once_with(
             [Gtk.AccessibleProperty.LABEL], ["Refresh data"],
         )
+
+    def test_package_progress_bar_has_accessible_package_context(self):
+        package = app_module.PackageStats(
+            name="example-package", translated_pct=75, untranslated=25,
+            need_review=0, changed=0, total=100, last_edited="",
+            last_editor="", translate_url="https://example.invalid/",
+        )
+        with patch.object(app_module, "set_accessible_label") as set_label:
+            PackageRow(package)
+
+        progress, label = set_label.call_args.args
+        self.assertIsInstance(progress, Gtk.ProgressBar)
+        self.assertEqual(label, "example-package: Translation Statistics")
+        self.assertAlmostEqual(progress.get_fraction(), 0.75)
 
     def test_control_f_focuses_package_search(self):
         window = Mock()
