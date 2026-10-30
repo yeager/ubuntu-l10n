@@ -24,7 +24,24 @@ used as the fallback.
 
 
 ### Debian/Ubuntu
+
+For the latest release, download the `ubuntu-l10n_*_all.deb` package from
+[GitHub Releases](https://github.com/yeager/ubuntu-l10n/releases/latest) and
+install the downloaded package:
+
 ```bash
+sudo apt install ./ubuntu-l10n_*_all.deb
+```
+
+The Danne L10n Suite APT repository also provides Ubuntu L10n, though its index
+may lag behind the latest GitHub release. To enable it:
+
+```bash
+wget -qO /tmp/yeager-repo-key.asc https://yeager.github.io/debian-repo/yeager-repo-key.asc
+sudo install -m 0644 /tmp/yeager-repo-key.asc /usr/share/keyrings/yeager-repo.asc
+echo 'deb [signed-by=/usr/share/keyrings/yeager-repo.asc] https://yeager.github.io/debian-repo ./' | sudo tee /etc/apt/sources.list.d/yeager.list
+sudo apt update
+apt-cache policy ubuntu-l10n
 sudo apt install ubuntu-l10n
 ```
 
@@ -32,9 +49,10 @@ The Debian package includes AppStream metadata with English and Swedish
 descriptions for GNOME Software.
 
 ### Fedora/RPM
-```bash
-sudo dnf install ubuntu-l10n
-```
+
+An RPM package for Ubuntu L10n is not currently published. On Fedora, use the
+[PyPI installation](#installation-from-pypi) after installing GTK4, libadwaita
+and PyGObject from Fedora's package manager.
 
 ## License
 
