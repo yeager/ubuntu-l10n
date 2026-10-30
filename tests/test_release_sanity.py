@@ -36,6 +36,13 @@ class ReleaseSanityTests(unittest.TestCase):
             self.assertIn(package_path, test_workflow)
             self.assertIn(package_path, publish_workflow)
 
+    def test_pypi_publish_is_restricted_to_version_tags(self):
+        workflow = (ROOT / ".github/workflows/pypi-publish.yml").read_text(encoding="utf-8")
+        self.assertIn("if: startsWith(github.ref, 'refs/tags/v')", workflow)
+        self.assertIn("ref: ${{ github.ref }}", workflow)
+        self.assertIn('RELEASE_TAG: ${{ github.ref_name }}', workflow)
+        self.assertIn('assert tag_version == project_version', workflow)
+
     def test_appstream_metadata_matches_app_id_and_release(self):
         metainfo = ET.parse(ROOT / "data" / "se.danielnylander.ubuntu-l10n.metainfo.xml").getroot()
         self.assertEqual(metainfo.findtext("id"), "se.danielnylander.ubuntu-l10n")
