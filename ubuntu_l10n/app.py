@@ -30,7 +30,8 @@ from .scraper import (  # noqa: E402
     load_config, save_config,
 )
 from .accessibility import (  # noqa: E402
-    AccessibilityManager, associate_mnemonic, set_accessible_label,
+    AccessibilityManager, associate_mnemonic, set_accessible_description,
+    set_accessible_label,
 )
 from .system_language import get_system_language  # noqa: E402
 from .selection_state import preferred_index  # noqa: E402
@@ -94,6 +95,42 @@ def _heatmap_css_class(pct):
     elif pct >= 50: return "heatmap-orange"
     elif pct > 0: return "heatmap-red"
     return "heatmap-gray"
+
+
+def _create_heatmap_tile(pkg):
+    """Create a keyboard-activatable, screen-reader-labeled heatmap tile."""
+    button = Gtk.Button()
+    button.add_css_class("flat")
+    button.set_size_request(140, 64)
+    button.set_margin_start(4)
+    button.set_margin_end(4)
+    button.set_margin_top(4)
+    button.set_margin_bottom(4)
+
+    tile = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+    tile.add_css_class(_heatmap_css_class(pkg.translated_pct))
+    name_label = Gtk.Label(label=pkg.name)
+    name_label.set_ellipsize(Pango.EllipsizeMode.END)
+    name_label.set_max_width_chars(18)
+    name_label.set_margin_top(6)
+    name_label.set_margin_start(6)
+    name_label.set_margin_end(6)
+    tile.append(name_label)
+    percent_label = Gtk.Label(label=f"{pkg.translated_pct:.0f}%")
+    percent_label.set_margin_bottom(6)
+    tile.append(percent_label)
+
+    button.set_child(tile)
+    button.set_tooltip_text(f"{pkg.name}: {pkg.translated}/{pkg.total}")
+    set_accessible_label(button, f"{pkg.name}: {pkg.translated_pct:.0f}%")
+    set_accessible_description(
+        button, _("View Ubuntu translation statistics from Launchpad"),
+    )
+    button.connect(
+        "clicked",
+        lambda _button, url=pkg.translate_url: webbrowser.open(url),
+    )
+    return button
 APP_ID = "se.danielnylander.ubuntu-l10n"
 FIRST_RUN_KEY = "first_run_done"
 
@@ -901,29 +938,7 @@ class MainWindow(Adw.ApplicationWindow):
                 break
             self._heatmap_flow.remove(child)
         for pkg in filtered:
-            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-            box.set_size_request(140, 64)
-            box.add_css_class(_heatmap_css_class(pkg.translated_pct))
-            box.set_margin_start(4)
-            box.set_margin_end(4)
-            box.set_margin_top(4)
-            box.set_margin_bottom(4)
-            lbl = Gtk.Label(label=pkg.name)
-            lbl.set_ellipsize(Pango.EllipsizeMode.END)
-            lbl.set_max_width_chars(18)
-            lbl.set_margin_top(6)
-            lbl.set_margin_start(6)
-            lbl.set_margin_end(6)
-            box.append(lbl)
-            pct_lbl = Gtk.Label(label=f"{pkg.translated_pct:.0f}%")
-            pct_lbl.set_margin_bottom(6)
-            box.append(pct_lbl)
-            box.set_tooltip_text(f"{pkg.name}: {pkg.translated}/{pkg.total}")
-            gesture = Gtk.GestureClick()
-            gesture.connect("released", lambda g, n, x, y, url=pkg.translate_url: webbrowser.open(url))
-            box.add_controller(gesture)
-            box.set_cursor(Gdk.Cursor.new_from_name("pointer"))
-            self._heatmap_flow.append(box)
+            self._heatmap_flow.append(_create_heatmap_tile(pkg))
 
         if self._heatmap_mode:
             self._stack.set_visible_child_name("heatmap")

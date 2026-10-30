@@ -11,7 +11,8 @@ except (ImportError, ValueError):
 
 if Adw is not None:
     from ubuntu_l10n.accessibility import (
-        AccessibilityManager, associate_mnemonic, set_accessible_label,
+        AccessibilityManager, associate_mnemonic, set_accessible_description,
+        set_accessible_label,
     )
     from ubuntu_l10n.app import MainWindow, PackageRow, SHORTCUTS
     from ubuntu_l10n import app as app_module
@@ -63,6 +64,15 @@ class AccessibilityManagerTests(unittest.TestCase):
             [Gtk.AccessibleProperty.LABEL], ["Refresh data"],
         )
 
+    def test_control_can_receive_accessible_description(self):
+        button = Mock()
+
+        set_accessible_description(button, "Opens translation statistics")
+
+        button.update_property.assert_called_once_with(
+            [Gtk.AccessibleProperty.DESCRIPTION], ["Opens translation statistics"],
+        )
+
     def test_package_progress_bar_has_accessible_package_context(self):
         package = app_module.PackageStats(
             name="example-package", translated_pct=75, untranslated=25,
@@ -76,6 +86,28 @@ class AccessibilityManagerTests(unittest.TestCase):
         self.assertIsInstance(progress, Gtk.ProgressBar)
         self.assertEqual(label, "example-package: Translation Statistics")
         self.assertAlmostEqual(progress.get_fraction(), 0.75)
+
+    def test_heatmap_tile_is_a_labeled_keyboard_button_that_opens_launchpad(self):
+        package = app_module.PackageStats(
+            name="example-package", translated_pct=75, untranslated=25,
+            need_review=0, changed=0, total=100, last_edited="",
+            last_editor="", translate_url="https://example.invalid/package",
+        )
+        with (
+            patch.object(app_module, "set_accessible_label") as set_label,
+            patch.object(app_module, "set_accessible_description") as set_description,
+            patch.object(app_module.webbrowser, "open") as open_url,
+        ):
+            button = app_module._create_heatmap_tile(package)
+            button.emit("clicked")
+
+        self.assertIsInstance(button, Gtk.Button)
+        self.assertTrue(button.get_focusable())
+        set_label.assert_called_once_with(button, "example-package: 75%")
+        set_description.assert_called_once_with(
+            button, "View Ubuntu translation statistics from Launchpad",
+        )
+        open_url.assert_called_once_with("https://example.invalid/package")
 
     def test_control_f_focuses_package_search(self):
         window = Mock()

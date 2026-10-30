@@ -5,10 +5,18 @@ from gi.repository import Gtk, Gdk, Gio
 
 
 def set_accessible_label(widget, label):
-    """Give icon-only controls a name that assistive technology can announce."""
+    """Give a widget a name that assistive technology can announce."""
     widget.update_property(
         [Gtk.AccessibleProperty.LABEL],
         [label],
+    )
+
+
+def set_accessible_description(widget, description):
+    """Explain a control's purpose to assistive technology."""
+    widget.update_property(
+        [Gtk.AccessibleProperty.DESCRIPTION],
+        [description],
     )
 
 
