@@ -82,5 +82,8 @@ jobs:
           dpkg-buildpackage -us -uc -b
           PACKAGE=$(find .. -maxdepth 1 -type f -name 'ubuntu-l10n_*_all.deb' -print -quit)
           test -n "$PACKAGE"
-          dpkg-deb --contents "$PACKAGE" | grep -Fq 'ubuntu_l10n/locale/sv/LC_MESSAGES/ubuntu-l10n.mo'
-          dpkg-deb --contents "$PACKAGE" | grep -Fq 'usr/share/metainfo/se.danielnylander.ubuntu-l10n.metainfo.xml'
+          CONTENTS=$(dpkg-deb --contents "$PACKAGE")
+          grep -Fq 'ubuntu_l10n/locale/sv/LC_MESSAGES/ubuntu-l10n.mo' <<<"$CONTENTS"
+          grep -Fq 'usr/share/metainfo/se.danielnylander.ubuntu-l10n.metainfo.xml' <<<"$CONTENTS"
+          grep -Fq 'usr/share/applications/se.danielnylander.ubuntu-l10n.desktop' <<<"$CONTENTS"
+          grep -Fq 'usr/share/icons/hicolor/scalable/apps/ubuntu-l10n.svg' <<<"$CONTENTS"

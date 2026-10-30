@@ -64,6 +64,19 @@ class ReleaseSanityTests(unittest.TestCase):
             for paragraph in metainfo.findall("description/p")
         ))
 
+    def test_debian_package_installs_the_launcher_and_icon(self):
+        install_rules = (ROOT / "debian/ubuntu-l10n.install").read_text(encoding="utf-8")
+        self.assertIn(
+            "se.danielnylander.ubuntu-l10n.desktop usr/share/applications",
+            install_rules,
+        )
+        self.assertIn(
+            "data/icons/ubuntu-l10n.svg usr/share/icons/hicolor/scalable/apps",
+            install_rules,
+        )
+        build_rules = (ROOT / "debian/rules").read_text(encoding="utf-8")
+        self.assertIn("desktop-merge.py se.danielnylander.ubuntu-l10n.desktop.in", build_rules)
+
     def test_release_list_includes_current_lts_and_marks_interim_eol(self):
         self.assertEqual(DISTRO_VERSIONS["stonking"], "26.10")
         self.assertEqual(DISTRO_VERSIONS["jammy"], "22.04 LTS")
