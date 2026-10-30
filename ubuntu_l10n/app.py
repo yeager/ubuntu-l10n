@@ -4,6 +4,7 @@ import csv
 from datetime import datetime as _dt_now
 import gettext
 import json
+import logging
 import platform as _platform
 import sys
 import threading
@@ -32,6 +33,7 @@ from .accessibility import (  # noqa: E402
     AccessibilityManager, associate_mnemonic, set_accessible_label,
 )
 from .system_language import get_system_language  # noqa: E402
+from .selection_state import preferred_index  # noqa: E402
 from . import __version__  # noqa: E402
 
 # i18n setup
@@ -209,6 +211,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Detect system language
         sys_lang = get_system_language(LANGUAGES)
+        config = load_config()
 
         # Main layout
         toolbar_view = Adw.ToolbarView()
@@ -305,7 +308,9 @@ class MainWindow(Adw.ApplicationWindow):
         self._distro_items = distro_items
 
         distro_drop = Gtk.DropDown(model=distro_model)
-        distro_drop.set_selected(0)
+        distro_drop.set_selected(
+            preferred_index(distro_items, config.get("distro")),
+        )
         distro_drop.connect("notify::selected", self._on_distro_changed)
         self._distro_drop = distro_drop
 
@@ -318,14 +323,14 @@ class MainWindow(Adw.ApplicationWindow):
         # Language selector
         lang_model = Gtk.StringList()
         lang_items = []
-        selected_lang_idx = 0
         for i, (code, name) in enumerate(sorted(LANGUAGES.items(), key=lambda x: x[1])):
             lang_model.append(f"{name} ({code})")
             lang_items.append(code)
-            if code == sys_lang:
-                selected_lang_idx = i
         self._lang_items = lang_items
 
+        selected_lang_idx = preferred_index(
+            lang_items, config.get("language"), sys_lang,
+        )
         lang_drop = Gtk.DropDown(model=lang_model)
         lang_drop.set_selected(selected_lang_idx)
         lang_drop.connect("notify::selected", self._on_lang_changed)
@@ -461,7 +466,6 @@ class MainWindow(Adw.ApplicationWindow):
         self._accessibility_manager = AccessibilityManager(self)
 
         # Show welcome dialog on first run, then load data
-        config = load_config()
         if not config.get(FIRST_RUN_KEY):
             GLib.idle_add(self._show_welcome)
         else:
@@ -591,10 +595,23 @@ class MainWindow(Adw.ApplicationWindow):
         self._load_data(force=True)
 
     def _on_distro_changed(self, _drop, _pspec):
+        self._save_selection()
         self._load_data()
 
     def _on_lang_changed(self, _drop, _pspec):
+        self._save_selection()
         self._load_data()
+
+    def _save_selection(self):
+        config = load_config()
+        config["distro"] = self._current_distro
+        config["language"] = self._current_lang
+        try:
+            save_config(config)
+        except OSError as error:
+            logging.getLogger(__name__).warning(
+                "Could not save selected Ubuntu release and language: %s", error,
+            )
 
     def _on_search_changed(self, entry):
         self._filter_and_display()

@@ -59,6 +59,8 @@ Sort labels provide keyboard mnemonics that move focus to their selectors.
 Translation results are cached locally for an hour. If a cached result is
 older, Ubuntu L10n shows it while trying Launchpad again. If that request
 fails, the saved result stays visible and the app explains how to retry.
+The app remembers the selected Ubuntu release and statistics language locally.
+On first launch, it chooses the system language when a translation is available.
 
 ## Author
 

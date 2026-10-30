@@ -71,6 +71,7 @@ jobs:
           grep -Fq './usr/share/icons/hicolor/scalable/apps/ubuntu-l10n.svg' <<<"$CONTENTS"
           grep -Fq './usr/share/locale/sv/LC_MESSAGES/ubuntu-l10n.mo' <<<"$CONTENTS"
           grep -Fq './usr/lib/python3/dist-packages/ubuntu_l10n/system_language.py' <<<"$CONTENTS"
+          grep -Fq './usr/lib/python3/dist-packages/ubuntu_l10n/selection_state.py' <<<"$CONTENTS"
           DEPENDS=$(dpkg-deb --field "$PACKAGE" Depends)
           for dependency in python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-bs4 python3-requests python3-lxml; do
             grep -Fq "$dependency" <<<"$DEPENDS"

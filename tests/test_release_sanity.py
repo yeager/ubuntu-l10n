@@ -26,6 +26,16 @@ class ReleaseSanityTests(unittest.TestCase):
         self.assertIsNotNone(source_version)
         self.assertEqual(metadata_version.group(1), source_version.group(1))
 
+    def test_configured_selection_helpers_are_in_all_packaging_checks(self):
+        test_workflow = (ROOT / ".github/workflows/tests.yml").read_text(encoding="utf-8")
+        publish_workflow = (ROOT / ".github/workflows/pypi-publish.yml").read_text(encoding="utf-8")
+        for package_path in (
+            "ubuntu_l10n/system_language.py",
+            "ubuntu_l10n/selection_state.py",
+        ):
+            self.assertIn(package_path, test_workflow)
+            self.assertIn(package_path, publish_workflow)
+
     def test_appstream_metadata_matches_app_id_and_release(self):
         metainfo = ET.parse(ROOT / "data" / "se.danielnylander.ubuntu-l10n.metainfo.xml").getroot()
         self.assertEqual(metainfo.findtext("id"), "se.danielnylander.ubuntu-l10n")

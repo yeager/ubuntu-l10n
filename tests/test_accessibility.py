@@ -156,6 +156,22 @@ class AccessibilityManagerTests(unittest.TestCase):
 
 @unittest.skipIf(Adw is None, "GTK 4 and libadwaita are not installed")
 class DataLoadStateTests(unittest.TestCase):
+    def test_language_change_saves_both_current_selectors(self):
+        window = Mock()
+        window._current_distro = "noble"
+        window._current_lang = "sv"
+        with (
+            patch.object(app_module, "load_config", return_value={"first_run_done": True}),
+            patch.object(app_module, "save_config") as save_config,
+        ):
+            MainWindow._save_selection(window)
+
+        save_config.assert_called_once_with({
+            "first_run_done": True,
+            "distro": "noble",
+            "language": "sv",
+        })
+
     def test_last_updated_uses_the_translated_label(self):
         window = Mock()
         with (

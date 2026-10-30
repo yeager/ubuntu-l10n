@@ -4,6 +4,7 @@
 
 - Select the default translation language from `LANGUAGE`, `LC_ALL`, `LC_MESSAGES` and `LANG`.
 - Normalize language and regional locale formats such as `pt_BR.UTF-8`.
+- Remember the selected Ubuntu release and statistics language between launches.
 - Add isolated tests for locale precedence, normalization and fallback behavior.
 
 ## 0.3.9 — 2026-10-30

@@ -2,6 +2,7 @@ ubuntu-l10n (0.3.10-1) noble; urgency=medium
 
   * Select the default translation language from desktop locale preferences.
   * Normalize language and regional locale formats consistently.
+  * Remember selected release and statistics language between launches.
 
  -- Daniel Nylander <daniel@danielnylander.se>  Fri, 30 Oct 2026 00:00:00 +0100
 
