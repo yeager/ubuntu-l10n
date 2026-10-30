@@ -531,7 +531,12 @@ class MainWindow(Adw.ApplicationWindow):
         def on_response(dlg, response):
             config = load_config()
             config[FIRST_RUN_KEY] = True
-            save_config(config)
+            try:
+                save_config(config)
+            except OSError as error:
+                logging.getLogger(__name__).warning(
+                    "Could not save first-run completion state: %s", error,
+                )
             self._load_data()
 
         dialog.connect("response", on_response)

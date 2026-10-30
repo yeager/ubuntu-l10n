@@ -269,6 +269,37 @@ class DataLoadStateTests(unittest.TestCase):
 
         self.assertIn("Could not save selected Ubuntu release and language", logs.output[0])
 
+    def test_welcome_dialog_loads_data_when_completion_state_is_saved(self):
+        window = Mock()
+        dialog = Mock()
+        with (
+            patch.object(app_module.Adw, "MessageDialog", return_value=dialog),
+            patch.object(app_module, "load_config", return_value={}),
+            patch.object(app_module, "save_config") as save_config,
+        ):
+            MainWindow._show_welcome(window)
+            response_handler = dialog.connect.call_args.args[1]
+            response_handler(dialog, "ok")
+
+        save_config.assert_called_once_with({app_module.FIRST_RUN_KEY: True})
+        window._load_data.assert_called_once_with()
+
+    def test_welcome_dialog_still_loads_data_when_config_is_unwritable(self):
+        window = Mock()
+        dialog = Mock()
+        with (
+            patch.object(app_module.Adw, "MessageDialog", return_value=dialog),
+            patch.object(app_module, "load_config", return_value={}),
+            patch.object(app_module, "save_config", side_effect=OSError("read-only")),
+            self.assertLogs("ubuntu_l10n.app", level="WARNING") as logs,
+        ):
+            MainWindow._show_welcome(window)
+            response_handler = dialog.connect.call_args.args[1]
+            response_handler(dialog, "ok")
+
+        self.assertIn("Could not save first-run completion state", logs.output[0])
+        window._load_data.assert_called_once_with()
+
     def test_last_updated_uses_the_translated_label(self):
         window = Mock()
         with (
