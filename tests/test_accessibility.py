@@ -358,6 +358,27 @@ class DataLoadStateTests(unittest.TestCase):
         self.assertEqual(result, GLib.SOURCE_REMOVE)
         window._loading_label.set_text.assert_not_called()
 
+    def test_new_load_cancels_previous_scraper_and_passes_its_event(self):
+        previous_cancel_event = Mock()
+        window = Mock()
+        window._load_cancel_event = previous_cancel_event
+        window._load_generation = 2
+        window._current_distro = "noble"
+        window._current_lang = "sv"
+
+        with (
+            patch.object(app_module.threading, "Thread") as thread_factory,
+            patch.object(app_module, "fetch_all_packages", return_value=[]) as fetch,
+            patch.object(app_module.GLib, "idle_add"),
+        ):
+            MainWindow._load_data(window)
+            previous_cancel_event.set.assert_called_once_with()
+            thread_factory.call_args.kwargs["target"]()
+
+        passed_event = fetch.call_args.kwargs["cancel_event"]
+        self.assertIsNot(passed_event, previous_cancel_event)
+        self.assertFalse(passed_event.is_set())
+
     def test_network_error_keeps_matching_cached_results_visible(self):
         window = Mock()
         window._load_generation = 3

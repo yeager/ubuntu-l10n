@@ -25,7 +25,7 @@ from gi.repository import Gtk, Adw, GLib, Gio, Pango, Gdk  # noqa: E402
 
 from .package_filter import filter_and_sort_packages  # noqa: E402
 from .scraper import (  # noqa: E402
-    fetch_all_packages, PackageStats,
+    fetch_all_packages, FetchCancelled, PackageStats,
     DISTRO_VERSIONS, EOL_DISTROS, ESM_DISTROS, LANGUAGES,
     load_config, save_config,
 )
@@ -246,6 +246,7 @@ class MainWindow(Adw.ApplicationWindow):
         self._cache_age = 0
         self._loaded_key = None
         self._load_generation = 0
+        self._load_cancel_event = None
         self._heatmap_mode = False
 
         # Detect system language
@@ -767,6 +768,10 @@ class MainWindow(Adw.ApplicationWindow):
         about.present(self)
 
     def _load_data(self, force=False):
+        if self._load_cancel_event is not None:
+            self._load_cancel_event.set()
+        cancel_event = threading.Event()
+        self._load_cancel_event = cancel_event
         self._load_generation += 1
         generation = self._load_generation
         data_key = (self._current_distro, self._current_lang)
@@ -800,12 +805,15 @@ class MainWindow(Adw.ApplicationWindow):
                     callback=progress_cb,
                     cache_cb=None if force else cache_cb,
                     force=force,
+                    cancel_event=cancel_event,
                 )
                 if not cache_state["fresh"]:
                     GLib.idle_add(
                         self._on_data_loaded, packages, False, 0,
                         generation, data_key,
                     )
+            except FetchCancelled:
+                return
             except Exception as e:
                 GLib.idle_add(self._on_data_error, str(e), generation, data_key)
 

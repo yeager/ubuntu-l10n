@@ -154,6 +154,18 @@ class JsonStorageTests(unittest.TestCase):
 
 
 class RequestRetryTests(unittest.TestCase):
+    def test_cancelled_request_does_not_contact_launchpad(self):
+        cancel_event = threading.Event()
+        cancel_event.set()
+        session = Mock()
+
+        with self.assertRaises(scraper.FetchCancelled):
+            scraper._request_with_retry(
+                session, "https://example.invalid", cancel_event=cancel_event,
+            )
+
+        session.get.assert_not_called()
+
     def test_retries_rate_limit_and_honours_retry_after(self):
         rate_limited = Mock(status_code=429, headers={"Retry-After": "3"})
         success = Mock(status_code=200, headers={})
@@ -365,6 +377,36 @@ class LaunchpadPaginationTests(unittest.TestCase):
 
         cache_callback.assert_called_once_with([package], 120)
         save_cache.assert_not_called()
+
+    def test_cancelled_pagination_stops_before_the_next_page_and_cache_write(self):
+        cancel_event = threading.Event()
+        response = Mock(text=(
+            '<table class="translation-stats"></table>'
+            '<td class="batch-navigation-index">1 to 300 of 600 results</td>'
+        ))
+        package, _cached_data = self._cached_package()
+        session = Mock()
+        session.headers = {}
+
+        def parse_first_page(_html, _distro):
+            cancel_event.set()
+            return [package] * 300
+
+        with (
+            patch.object(scraper.requests, "Session", return_value=session),
+            patch.object(scraper, "_request_with_retry", return_value=response) as request,
+            patch.object(scraper, "parse_page", side_effect=parse_first_page),
+            patch.object(scraper, "save_cache") as save_cache,
+            patch.object(scraper.time, "sleep") as sleep,
+        ):
+            with self.assertRaises(scraper.FetchCancelled):
+                scraper.fetch_all_packages(
+                    "noble", "sv", force=True, cancel_event=cancel_event,
+                )
+
+        request.assert_called_once()
+        save_cache.assert_not_called()
+        sleep.assert_not_called()
 
     def test_fetches_every_page_when_total_uses_thousands_separator(self):
         first_page = (

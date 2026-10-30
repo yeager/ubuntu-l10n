@@ -28,6 +28,10 @@ _CACHE_WRITE_LOCK = threading.Lock()
 _LOGGER = logging.getLogger(__name__)
 
 
+class FetchCancelled(Exception):
+    """Raised when the user has replaced an in-progress data selection."""
+
+
 @dataclass
 class PackageStats:
     """Translation statistics for a single package/template."""
@@ -207,18 +211,35 @@ def save_cache(distro: str, lang: str, data: list[dict]) -> bool:
         return True
 
 
+def _check_cancelled(cancel_event: threading.Event | None) -> None:
+    if cancel_event is not None and cancel_event.is_set():
+        raise FetchCancelled("Translation data fetch was cancelled")
+
+
+def _wait_or_cancel(cancel_event: threading.Event | None, seconds: float) -> None:
+    if cancel_event is not None:
+        if cancel_event.wait(seconds):
+            raise FetchCancelled("Translation data fetch was cancelled")
+    else:
+        time.sleep(seconds)
+
+
 def _request_with_retry(session: requests.Session, url: str,
-                        max_retries: int = 4) -> requests.Response:
+                        max_retries: int = 4,
+                        cancel_event: threading.Event | None = None) -> requests.Response:
     """GET with bounded exponential backoff for transient network/server errors."""
     attempts = max(1, max_retries)
     for attempt in range(attempts):
+        _check_cancelled(cancel_event)
         try:
             response = session.get(url, timeout=30)
         except (requests.Timeout, requests.ConnectionError):
             if attempt + 1 == attempts:
                 raise
-            time.sleep(2 ** (attempt + 1))
+            _wait_or_cancel(cancel_event, 2 ** (attempt + 1))
             continue
+
+        _check_cancelled(cancel_event)
 
         if response.status_code == 429 or 500 <= response.status_code < 600:
             if attempt + 1 == attempts:
@@ -238,7 +259,7 @@ def _request_with_retry(session: requests.Session, url: str,
                     wait = 2 ** (attempt + 1)
             except (TypeError, ValueError, OverflowError):
                 wait = 2 ** (attempt + 1)
-            time.sleep(wait)
+            _wait_or_cancel(cancel_event, wait)
             continue
 
         response.raise_for_status()
@@ -386,13 +407,16 @@ def _dicts_to_packages(dicts: list[dict]) -> list[PackageStats]:
 
 
 def fetch_all_packages(distro: str, lang: str, callback=None,
-                       cache_cb=None, force: bool = False) -> list[PackageStats]:
+                       cache_cb=None, force: bool = False,
+                       cancel_event: threading.Event | None = None) -> list[PackageStats]:
     """Fetch all translation packages, paginating as needed.
 
     callback(loaded, total) — progress updates.
     cache_cb(packages, age_minutes) — called if cached data is available.
     force — skip cache.
+    cancel_event — stop before retrying or fetching another page when set.
     """
+    _check_cancelled(cancel_event)
     # Check cache first. Keep stale data available while refreshing so the UI
     # can still show useful results if Launchpad is temporarily unavailable.
     if not force:
@@ -420,7 +444,7 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
 
     # First page
     url = get_lang_url(distro, lang, batch, 0)
-    resp = _request_with_retry(session, url)
+    resp = _request_with_retry(session, url, cancel_event=cancel_event)
 
     total = get_total_count(resp.text)
     packages = parse_page(resp.text, distro)
@@ -434,9 +458,9 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
     # Remaining pages
     start = batch
     while start < total:
-        time.sleep(REQUEST_DELAY)
+        _wait_or_cancel(cancel_event, REQUEST_DELAY)
         url = get_lang_url(distro, lang, batch, start)
-        resp = _request_with_retry(session, url)
+        resp = _request_with_retry(session, url, cancel_event=cancel_event)
         packages = parse_page(resp.text, distro)
         if not packages:
             raise LaunchpadResponseError("Launchpad returned an empty page before all results were loaded")
@@ -452,6 +476,7 @@ def fetch_all_packages(distro: str, lang: str, callback=None,
         )
 
     # Save to cache
+    _check_cancelled(cancel_event)
     save_cache(distro, lang, _packages_to_dicts(all_packages))
 
     return all_packages
