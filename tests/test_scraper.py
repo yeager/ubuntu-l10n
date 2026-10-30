@@ -27,6 +27,25 @@ class JsonStorageTests(unittest.TestCase):
         self.assertEqual(stat.S_IMODE(self.config_file.stat().st_mode), 0o600)
         self.assertEqual(list(self.config_file.parent.iterdir()), [self.config_file])
 
+    def test_save_config_can_write_notifications_without_overwriting_main_config(self):
+        main_config = self.config_file
+        notifications_file = self.config_file.parent / "notifications.json"
+        with patch.object(scraper, "CONFIG_FILE", main_config):
+            scraper.save_config({"language": "sv"})
+            scraper.save_config({"enabled": False}, path=notifications_file)
+
+        self.assertEqual(json.loads(main_config.read_text(encoding="utf-8")), {"language": "sv"})
+        self.assertEqual(
+            json.loads(notifications_file.read_text(encoding="utf-8")), {"enabled": False},
+        )
+        self.assertEqual(stat.S_IMODE(notifications_file.stat().st_mode), 0o600)
+
+    def test_config_recovers_from_invalid_utf8(self):
+        self.config_file.parent.mkdir(parents=True)
+        self.config_file.write_bytes(b"\xff\xfe")
+        with patch.object(scraper, "CONFIG_FILE", self.config_file):
+            self.assertEqual(scraper.load_config(), {})
+
     def test_cache_round_trip_and_corrupt_cache_recovery(self):
         with patch.object(scraper, "CACHE_FILE", self.cache_file):
             self.assertTrue(scraper.save_cache("noble", "sv", [{"name": "example"}]))
@@ -400,6 +419,30 @@ class LaunchpadPackageParsingTests(unittest.TestCase):
         self.assertEqual(package.changed, 3)
         self.assertEqual(package.total, 1234)
         self.assertEqual(package.translated, 0)
+
+    def test_parse_page_keeps_only_launchpad_translation_links(self):
+        row = """<tr id="ubuntu-example">
+          <td><a href="{href}">{name}</a></td>
+          <td><span class="sortkey">50</span></td>
+          <td><span class="sortkey">1</span></td>
+          <td><span class="sortkey">0</span></td>
+          <td><span class="sortkey">0</span></td>
+          <td>2</td><td></td><td></td>
+        </tr>"""
+        html = '<table class="translation-stats">' + "".join((
+            row.format(href="/ubuntu/noble/+source/example", name="valid"),
+            row.format(href="https://example.invalid/ubuntu/noble/+source/fake", name="external"),
+            row.replace(' href="{href}"', "").format(name="missing"),
+            row.format(href="javascript:alert(1)", name="script"),
+        )) + "</table>"
+
+        packages = scraper.parse_page(html, "noble")
+
+        self.assertEqual([package.name for package in packages], ["valid"])
+        self.assertEqual(
+            packages[0].translate_url,
+            "https://translations.launchpad.net/ubuntu/noble/+source/example",
+        )
 
 
 if __name__ == "__main__":

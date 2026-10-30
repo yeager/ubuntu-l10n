@@ -213,12 +213,20 @@ class DataLoadStateTests(unittest.TestCase):
             config_path.return_value.read_text.side_effect = OSError("unavailable")
             self.assertEqual(app_module._load_notify_config(), {"enabled": True})
 
+            config_path.return_value.read_text.side_effect = UnicodeDecodeError(
+                "utf-8", b"\xff", 0, 1, "invalid start byte",
+            )
+            self.assertEqual(app_module._load_notify_config(), {"enabled": True})
+
     def test_notification_preferences_use_atomic_config_writer(self):
         preferences = {"enabled": False}
-        with patch.object(app_module, "save_config") as save_config:
+        with (
+            patch.object(app_module, "save_config") as save_config,
+            patch.object(app_module, "_notify_config_path", return_value="notifications.json") as path,
+        ):
             app_module._save_notify_config(preferences)
 
-        save_config.assert_called_once_with(preferences)
+        save_config.assert_called_once_with(preferences, path=path.return_value)
 
     def test_selector_change_saves_preferences_before_loading(self):
         for callback in (MainWindow._on_distro_changed, MainWindow._on_lang_changed):

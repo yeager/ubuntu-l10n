@@ -13,6 +13,7 @@ from dataclasses import dataclass, asdict
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Callable
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -103,12 +104,32 @@ class LaunchpadResponseError(ValueError):
     """Raised when Launchpad returns a page without usable statistics."""
 
 
+def _launchpad_translation_url(href: object) -> str | None:
+    """Accept only HTTPS links under the Ubuntu translations service."""
+    if not isinstance(href, str) or not href:
+        return None
+    parsed_href = urlparse(href)
+    if parsed_href.scheme and parsed_href.scheme != "https":
+        return None
+    if parsed_href.netloc and parsed_href.netloc != "translations.launchpad.net":
+        return None
+    url = urljoin("https://translations.launchpad.net", href)
+    parsed_url = urlparse(url)
+    if (
+        parsed_url.scheme != "https"
+        or parsed_url.netloc != "translations.launchpad.net"
+        or not parsed_url.path.startswith("/ubuntu/")
+    ):
+        return None
+    return url
+
+
 def load_config() -> dict:
     """Load config from ~/.config/ubuntu-l10n/config.json."""
     try:
         config = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
         return config if isinstance(config, dict) else {}
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return {}
 
 
@@ -134,9 +155,9 @@ def _atomic_write_json(path: Path, data: dict):
         raise
 
 
-def save_config(config: dict):
-    """Save config to ~/.config/ubuntu-l10n/config.json."""
-    _atomic_write_json(CONFIG_FILE, config)
+def save_config(config: dict, path: Path | None = None):
+    """Save config atomically to the main config file or an explicit JSON path."""
+    _atomic_write_json(CONFIG_FILE if path is None else Path(path), config)
 
 
 def _cache_key(distro: str, lang: str) -> str:
@@ -251,7 +272,9 @@ def parse_page(html: str, distro: str) -> list[PackageStats]:
         if not name_link:
             continue
         name = name_link.get_text(strip=True)
-        translate_url = "https://translations.launchpad.net" + name_link["href"]
+        translate_url = _launchpad_translation_url(name_link.get("href"))
+        if not name or not translate_url:
+            continue
 
         # Translated percentage
         sortkeys = cells[1].find_all("span", class_="sortkey")

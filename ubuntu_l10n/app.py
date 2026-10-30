@@ -147,13 +147,13 @@ def _load_notify_config():
     try:
         config = json.loads(_notify_config_path().read_text(encoding="utf-8"))
         return config if isinstance(config, dict) else {"enabled": True}
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return {"enabled": True}
 
 
 def _save_notify_config(config):
     """Save notification preferences through the shared atomic config writer."""
-    save_config(config)
+    save_config(config, path=_notify_config_path())
 
 
 def _send_notification(summary, body="", icon="dialog-information"):
