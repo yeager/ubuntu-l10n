@@ -13,6 +13,10 @@ if [[ "$VERSION" != "$PROJECT_VERSION" ]]; then
     exit 1
 fi
 
+python3 scripts/compile-translations.py
+python3 desktop-merge.py se.danielnylander.ubuntu-l10n.desktop.in po/ \
+    se.danielnylander.ubuntu-l10n.desktop
+
 mkdir -p "$OUTPUT_DIR"
 OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
 PACKAGE_DIR="$(mktemp -d)"
