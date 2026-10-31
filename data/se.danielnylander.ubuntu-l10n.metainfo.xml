@@ -35,6 +35,12 @@
     <keyword>Ubuntu</keyword>
   </keywords>
   <releases>
+    <release version="0.3.16" date="2026-10-31">
+      <description>
+        <p>Explain the Launchpad network request before first loading current translation statistics.</p>
+        <p xml:lang="sv">Förklara nätverksbegäran till Launchpad innan aktuell översättningsstatistik hämtas första gången.</p>
+      </description>
+    </release>
     <release version="0.3.15" date="2026-10-30">
       <description>
         <p>Update APT repository signing key instructions.</p>

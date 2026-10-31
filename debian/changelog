@@ -1,3 +1,9 @@
+ubuntu-l10n (0.3.16-1) noble; urgency=medium
+
+  * Explain the initial Launchpad request before loading live statistics.
+
+ -- Daniel Nylander <daniel@danielnylander.se>  Sat, 31 Oct 2026 09:30:00 +0100
+
 ubuntu-l10n (0.3.15-1) noble; urgency=medium
 
   * Update APT signing key instructions for the replacement repository key.
