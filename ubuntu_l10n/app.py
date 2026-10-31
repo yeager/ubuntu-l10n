@@ -524,10 +524,12 @@ class MainWindow(Adw.ApplicationWindow):
                 "• Click any package to open it on Launchpad\n"
                 "• Use the refresh button to get the latest data\n\n"
                 "Data is cached locally for 1 hour to reduce load on "
-                "Launchpad servers."
+                "Launchpad servers. To load current statistics, Ubuntu L10n "
+                "contacts Launchpad. Launchpad can see your IP address and "
+                "the release and language you select."
             ),
         )
-        dialog.add_response("ok", _("Get Started"))
+        dialog.add_response("ok", _("Continue and load data"))
         dialog.set_response_appearance("ok", Adw.ResponseAppearance.SUGGESTED)
 
         def on_response(dlg, response):

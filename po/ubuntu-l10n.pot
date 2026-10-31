@@ -141,11 +141,13 @@ msgid ""
 "• Click any package to open it on Launchpad\n"
 "• Use the refresh button to get the latest data\n"
 "\n"
-"Data is cached locally for 1 hour to reduce load on Launchpad servers."
+"Data is cached locally for 1 hour to reduce load on Launchpad servers. To "
+"load current statistics, Ubuntu L10n contacts Launchpad. Launchpad can see "
+"your IP address and the release and language you select."
 msgstr ""
 
-#: ubuntu_l10n/app.py:489
-msgid "Get Started"
+#: ubuntu_l10n/app.py:533
+msgid "Continue and load data"
 msgstr ""
 
 #: ubuntu_l10n/app.py:536

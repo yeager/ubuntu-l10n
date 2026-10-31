@@ -291,6 +291,19 @@ class DataLoadStateTests(unittest.TestCase):
         save_config.assert_called_once_with({app_module.FIRST_RUN_KEY: True})
         window._load_data.assert_called_once_with()
 
+    def test_welcome_discloses_the_initial_launchpad_request(self):
+        window = Mock()
+        dialog = Mock()
+        with patch.object(
+            app_module.Adw, "MessageDialog", return_value=dialog,
+        ) as create_dialog:
+            MainWindow._show_welcome(window)
+
+        body = create_dialog.call_args.kwargs["body"]
+        self.assertIn("Launchpad can see your IP address", body)
+        self.assertIn("release and language", body)
+        dialog.add_response.assert_called_once_with("ok", "Continue and load data")
+
     def test_welcome_dialog_still_loads_data_when_config_is_unwritable(self):
         window = Mock()
         dialog = Mock()
