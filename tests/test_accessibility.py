@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import Mock, patch
 
@@ -26,7 +27,13 @@ else:
 class AccessibilityManagerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        Gtk.init()
+        if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+            raise unittest.SkipTest("GTK display is not available")
+        initialized = Gtk.init_check()
+        if isinstance(initialized, tuple):
+            initialized = initialized[0]
+        if not initialized:
+            raise unittest.SkipTest("GTK display is not available")
 
     def setUp(self):
         self.app = Adw.Application(
